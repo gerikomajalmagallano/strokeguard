@@ -51,12 +51,11 @@
           </button>
         </form>
 
-        <p v-if="auth.authError" class="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">{{ auth.authError }}</p>
+        <p v-if="auth.authError" role="alert" class="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">{{ auth.authError }}</p>
 
         <p class="mt-5 rounded-xl bg-slate-50 p-3 text-xs leading-5 text-slate-600">
-          {{ supabaseConfigured ? 'Supabase Authentication and PostgreSQL mode. Sign-in and account creation require internet access; a valid, previously established session may continue offline on this device.' : 'Supabase is not configured. Sign-in and account creation are disabled until you configure the Supabase project URL and publishable/anon key.' }}
+          {{ supabaseConfigured ? 'Sign-in, assessments, and patient records require an internet connection and are stored in Supabase.' : 'Supabase is not configured. Add the project URL and publishable/anon key to enable sign-in and patient records.' }}
         </p>
-        <p class="mt-3 rounded-xl bg-amber-50 p-3 text-xs leading-5 text-amber-900">Offline access requires an unexpired Supabase session and encrypted data previously cached on this device. Expired/revoked credentials, cleared site data, a missing encryption key, or a shared/unlocked device may prevent access or expose information to another device user. Always log out on shared devices.</p>
 
         <p class="mt-4 text-center text-xs leading-5 text-slate-500">Use this research prototype for assessment and decision-support demonstrations only.</p>
       </div>

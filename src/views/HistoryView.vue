@@ -3,7 +3,7 @@
     <header><p class="text-sm font-semibold uppercase text-blue-700">History</p><h1 class="mt-1 text-3xl font-bold">Assessment history</h1><p class="mt-2 text-slate-600">Only your assessment records are shown.</p></header>
     <div v-if="store.assessments.length" class="space-y-3">
       <article v-for="item in store.assessments" :key="item.id" class="card flex flex-wrap items-center justify-between gap-4">
-        <div><p class="font-semibold">{{ formatDate(item.date) }}</p><p class="mt-1 text-sm text-slate-600">Classification: <strong>{{ item.severity }}</strong></p><p v-if="item.syncStatus === 'pending'" class="mt-1 text-xs font-semibold text-orange-800">Sync Pending — stored encrypted on this device</p></div>
+        <div><p class="font-semibold">{{ formatDate(item.date) }}</p><p class="mt-1 text-sm text-slate-600">Classification: <strong>{{ item.severity }}</strong></p></div>
         <RouterLink :to="`/results/${item.id}`" class="btn-secondary">View Details</RouterLink>
       </article>
     </div>

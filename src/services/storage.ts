@@ -1,16 +1,16 @@
 import type { AssessmentResult, ExerciseSession } from '@/types'
 import type { UserProfile } from '@/types/auth'
 import { exercises } from '@/data/exercises'
-import { offlineDb } from '@/services/offlineDb'
 import { supabase, supabaseConfigured } from '@/services/supabase'
 
-function isConnectivityError(error: unknown): boolean {
-  if (error instanceof TypeError) return true
-  if (!error || typeof error !== 'object') return false
-  const candidate = error as { name?: string; message?: string; cause?: unknown }
-  return candidate.name?.includes('FetchError') === true ||
-    /network|fetch failed|failed to fetch|connection/i.test(candidate.message ?? '') ||
-    (candidate.cause !== undefined && isConnectivityError(candidate.cause))
+function requireOnlineSupabase() {
+  if (!supabaseConfigured || !supabase) {
+    throw new Error('Supabase is not configured. Add the project URL and publishable/anon key.')
+  }
+  if (!navigator.onLine) {
+    throw new Error('An internet connection is required to load or save patient records.')
+  }
+  return supabase
 }
 
 function fromDatabaseRow(row: any): AssessmentResult {
@@ -40,98 +40,89 @@ function fromDatabaseRow(row: any): AssessmentResult {
       },
       notes: functional?.notes ?? row.notes ?? ''
     },
-    recommendations,
-    syncStatus: 'synced'
+    recommendations
   }
-}
-
-async function writeAssessment(assessment: AssessmentResult): Promise<void> {
-  if (!supabaseConfigured || !supabase) {
-    throw new Error('Supabase is not configured. Configure the Supabase URL and publishable/anon key before saving assessments.')
-  }
-  const { error } = await supabase.rpc('save_assessment_offline', { assessment })
-  if (error) throw error
 }
 
 export const storage = {
-  initializeSecureCache: (userId: string) => offlineDb.initializeSession(userId),
-  getCachedProfile: (userId: string) => offlineDb.getProfile(userId),
-  cacheProfile: (profile: UserProfile) => offlineDb.cacheProfile(profile),
-  clearPatientData: (userId: string, patientId?: string) => offlineDb.clearPatientData(userId, patientId),
-  migrateLegacySessions: (patientId: string) => offlineDb.migrateLegacySessions(patientId),
-
-  async getCachedAssessments(patientId: string): Promise<AssessmentResult[]> {
-    return offlineDb.getAssessments(patientId)
-  },
-
   async getAssessments(patientId: string): Promise<AssessmentResult[]> {
-    if (!supabaseConfigured || !supabase) {
-      throw new Error('Supabase is not configured. Assessment history is available only from this device cache.')
-    }
-
-    const { data, error } = await supabase
+    const client = requireOnlineSupabase()
+    const { data, error } = await client
       .from('assessments')
       .select('*, functional_assessments(*), recommendations(exercise_id, reason)')
       .eq('patient_id', patientId)
       .order('assessment_date', { ascending: false })
     if (error) throw error
-
-    const synced = (data ?? []).map(fromDatabaseRow)
-    const pending = await offlineDb.getPendingAssessments(patientId)
-    const combined = new Map<string, AssessmentResult>()
-    for (const assessment of [...synced, ...pending]) combined.set(assessment.id, assessment)
-    const assessments = [...combined.values()].sort((a, b) => b.date.localeCompare(a.date))
-    await Promise.all(synced.map(assessment => offlineDb.cacheAssessment(assessment)))
-    return assessments
+    return (data ?? []).map(fromDatabaseRow)
   },
 
-  async saveAssessment(assessment: AssessmentResult): Promise<'synced' | 'pending'> {
-    if (!supabaseConfigured || !supabase) {
-      throw new Error('Supabase is not configured. Sign-in and assessment saving require the Supabase project.')
-    }
-    if (!navigator.onLine) {
-      await offlineDb.queueAssessment(assessment)
-      return 'pending'
-    }
-
-    try {
-      await writeAssessment(assessment)
-      await offlineDb.markAssessmentSynced(assessment)
-      return 'synced'
-    } catch (error) {
-      if (!isConnectivityError(error)) throw error
-      await offlineDb.queueAssessment(assessment)
-      return 'pending'
-    }
+  async saveAssessment(assessment: AssessmentResult): Promise<void> {
+    const client = requireOnlineSupabase()
+    const { error } = await client.rpc('save_assessment', { assessment })
+    if (error) throw error
   },
 
-  async getPendingCount(patientId: string): Promise<number> {
-    return (await offlineDb.getPendingAssessments(patientId)).length
+  async getSessions(patientId: string): Promise<ExerciseSession[]> {
+    const client = requireOnlineSupabase()
+    const { data, error } = await client
+      .from('exercise_sessions')
+      .select('id, patient_id, assessment_id, exercise_id, exercise_name, completed_at, feedback, notes')
+      .eq('patient_id', patientId)
+      .order('completed_at', { ascending: false })
+    if (error) throw error
+    return (data ?? []).map(row => ({
+      id: row.id,
+      patientId: row.patient_id,
+      assessmentId: row.assessment_id ?? 'standalone',
+      exerciseId: row.exercise_id,
+      exerciseName: row.exercise_name,
+      completedAt: row.completed_at,
+      feedback: row.feedback ?? undefined,
+      notes: row.notes ?? undefined
+    }))
   },
 
-  async syncPendingAssessments(patientId: string): Promise<{ synced: number; pending: number; errors: string[] }> {
-    if (!supabaseConfigured || !supabase) {
-      throw new Error('Supabase is not configured. Pending assessments cannot be synchronized.')
-    }
-    if (!navigator.onLine) {
-      return { synced: 0, pending: await this.getPendingCount(patientId), errors: [] }
-    }
-
-    const pending = await offlineDb.getPendingAssessments(patientId)
-    const errors: string[] = []
-    let synced = 0
-    for (const assessment of pending) {
-      try {
-        await writeAssessment(assessment)
-        await offlineDb.markAssessmentSynced(assessment)
-        synced += 1
-      } catch (error) {
-        errors.push(error instanceof Error ? error.message : 'An assessment could not be synchronized.')
-      }
-    }
-    return { synced, pending: await this.getPendingCount(patientId), errors }
+  async saveSession(session: ExerciseSession): Promise<void> {
+    const client = requireOnlineSupabase()
+    const { error } = await client.from('exercise_sessions').insert({
+      id: session.id,
+      patient_id: session.patientId,
+      assessment_id: session.assessmentId === 'standalone' ? null : session.assessmentId,
+      exercise_id: session.exerciseId,
+      exercise_name: session.exerciseName,
+      completed_at: session.completedAt,
+      feedback: session.feedback ?? null,
+      notes: session.notes ?? null
+    })
+    if (error) throw error
   },
 
-  getSessions: (patientId: string) => offlineDb.getSessions(patientId),
-  saveSession: (session: ExerciseSession) => offlineDb.saveSession(session)
+  async updatePatientInfo(user: UserProfile, patient: { fullName: string; age: number; sex: string }): Promise<UserProfile> {
+    const client = requireOnlineSupabase()
+    const { data, error } = await client
+      .from('patients')
+      .upsert({ user_id: user.userId, full_name: patient.fullName, age: patient.age, sex: patient.sex }, { onConflict: 'user_id' })
+      .select('id')
+      .single()
+    if (error) throw error
+    return { ...user, ...patient, id: data.id, onboardingComplete: true }
+  },
+
+  async getPatient(userId: string, email: string): Promise<UserProfile> {
+    const client = requireOnlineSupabase()
+    const { data, error } = await client.from('patients')
+      .select('id, full_name, age, sex')
+      .eq('user_id', userId)
+      .maybeSingle()
+    if (error) throw error
+    return {
+      id: data?.id ?? '',
+      userId,
+      fullName: data?.full_name ?? '',
+      email,
+      age: data?.age ?? null,
+      sex: data?.sex ?? '',
+      onboardingComplete: !!data
+    }
+  }
 }

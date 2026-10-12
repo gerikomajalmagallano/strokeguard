@@ -4,7 +4,6 @@
       <p class="text-sm font-semibold uppercase text-blue-700">New assessment</p>
       <h1 class="mt-1 text-3xl font-bold">Functional assessment</h1>
       <p class="mt-2 text-slate-600">Record findings to generate a transparent, rules-based classification and exercise guidance.</p>
-      <p v-if="!store.online" class="mt-3 rounded-xl bg-amber-50 p-3 text-sm leading-5 text-amber-900">You are offline. This assessment will be encrypted on this device and queued for Supabase synchronization when you reconnect. Keep this signed-in browser session open; signing out is blocked while records are pending.</p>
     </header>
 
     <ol class="grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label="Assessment progress">
@@ -91,6 +90,19 @@ const form = reactive<AssessmentInput>({
   notes: ''
 })
 
+function getSaveErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message
+  if (typeof error === 'string' && error.trim()) return error
+  if (error && typeof error === 'object') {
+    const details = error as { message?: unknown; details?: unknown; hint?: unknown }
+    const parts = [details.message, details.details, details.hint]
+      .filter((part): part is string => typeof part === 'string' && !!part.trim())
+    if (parts.length) return [...new Set(parts)].join(' ')
+  }
+  console.error('Assessment save failed with an unrecognized error.', error)
+  return 'The assessment could not be saved.'
+}
+
 function setFunctional<K extends keyof FunctionalFindings>(key: K, value: FunctionalFindings[K] | string) {
   form.functional[key] = value as FunctionalFindings[K]
 }
@@ -116,7 +128,7 @@ async function submit() {
     await store.saveAssessment(assessment)
     await router.push(`/results/${assessment.id}`)
   } catch (error) {
-    saveError.value = error instanceof Error ? error.message : 'The assessment could not be saved.'
+    saveError.value = getSaveErrorMessage(error)
   } finally {
     saving.value = false
   }

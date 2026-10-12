@@ -53,31 +53,50 @@ create table if not exists public.recommendations (
   unique (assessment_id, exercise_id)
 );
 
+create table if not exists public.exercise_sessions (
+  id uuid primary key default gen_random_uuid(),
+  patient_id uuid not null references public.patients(id) on delete cascade,
+  assessment_id uuid references public.assessments(id) on delete set null,
+  exercise_id integer not null references public.exercises(id),
+  exercise_name text not null,
+  completed_at timestamptz not null default now(),
+  feedback text check (feedback is null or feedback in ('Comfortable', 'Slightly difficult', 'Difficult')),
+  notes text
+);
+
 alter table public.patients enable row level security;
 alter table public.exercises enable row level security;
 alter table public.assessments enable row level security;
 alter table public.functional_assessments enable row level security;
 alter table public.recommendations enable row level security;
+alter table public.exercise_sessions enable row level security;
 
+drop policy if exists "Patients can read their own patient row" on public.patients;
 create policy "Patients can read their own patient row" on public.patients
   for select to authenticated using (user_id = auth.uid());
+drop policy if exists "Patients can create their own patient row" on public.patients;
 create policy "Patients can create their own patient row" on public.patients
   for insert to authenticated with check (user_id = auth.uid());
+drop policy if exists "Patients can update their own patient row" on public.patients;
 create policy "Patients can update their own patient row" on public.patients
   for update to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
 
+drop policy if exists "Authenticated users can read exercise catalogue" on public.exercises;
 create policy "Authenticated users can read exercise catalogue" on public.exercises
   for select to authenticated using (true);
 
+drop policy if exists "Patients can read their own assessments" on public.assessments;
 create policy "Patients can read their own assessments" on public.assessments
   for select to authenticated using (
     exists (select 1 from public.patients p where p.id = patient_id and p.user_id = auth.uid())
   );
+drop policy if exists "Patients can create their own assessments" on public.assessments;
 create policy "Patients can create their own assessments" on public.assessments
   for insert to authenticated with check (
     exists (select 1 from public.patients p where p.id = patient_id and p.user_id = auth.uid())
   );
 
+drop policy if exists "Patients can read their own functional assessments" on public.functional_assessments;
 create policy "Patients can read their own functional assessments" on public.functional_assessments
   for select to authenticated using (
     exists (
@@ -86,6 +105,7 @@ create policy "Patients can read their own functional assessments" on public.fun
       where a.id = assessment_id and p.user_id = auth.uid()
     )
   );
+drop policy if exists "Patients can create their own functional assessments" on public.functional_assessments;
 create policy "Patients can create their own functional assessments" on public.functional_assessments
   for insert to authenticated with check (
     exists (
@@ -95,6 +115,7 @@ create policy "Patients can create their own functional assessments" on public.f
     )
   );
 
+drop policy if exists "Patients can read their own recommendations" on public.recommendations;
 create policy "Patients can read their own recommendations" on public.recommendations
   for select to authenticated using (
     exists (
@@ -103,12 +124,35 @@ create policy "Patients can read their own recommendations" on public.recommenda
       where a.id = assessment_id and p.user_id = auth.uid()
     )
   );
+drop policy if exists "Patients can create their own recommendations" on public.recommendations;
 create policy "Patients can create their own recommendations" on public.recommendations
   for insert to authenticated with check (
     exists (
       select 1 from public.assessments a
       join public.patients p on p.id = a.patient_id
       where a.id = assessment_id and p.user_id = auth.uid()
+    )
+  );
+
+drop policy if exists "Patients can read their own exercise sessions" on public.exercise_sessions;
+create policy "Patients can read their own exercise sessions" on public.exercise_sessions
+  for select to authenticated using (
+    exists (select 1 from public.patients p where p.id = patient_id and p.user_id = auth.uid())
+  );
+drop policy if exists "Patients can create their own exercise sessions" on public.exercise_sessions;
+create policy "Patients can create their own exercise sessions" on public.exercise_sessions
+  for insert to authenticated with check (
+    exists (
+      select 1 from public.patients p
+      where p.id = exercise_sessions.patient_id and p.user_id = auth.uid()
+    )
+    and (
+      exercise_sessions.assessment_id is null
+      or exists (
+        select 1 from public.assessments a
+        where a.id = exercise_sessions.assessment_id
+          and a.patient_id = exercise_sessions.patient_id
+      )
     )
   );
 
@@ -135,3 +179,62 @@ on conflict (id) do update set
   instructions = excluded.instructions,
   purpose = excluded.purpose,
   safety_notes = excluded.safety_notes;
+
+create or replace function public.save_assessment(assessment jsonb)
+returns void
+language plpgsql
+security invoker
+set search_path = public, pg_temp
+as $$
+declare
+  assessment_id uuid := (assessment ->> 'id')::uuid;
+  patient_id uuid := (assessment ->> 'patientId')::uuid;
+  assessment_input jsonb := assessment -> 'input';
+  functional jsonb := assessment_input -> 'functional';
+begin
+  if auth.uid() is null then
+    raise exception 'Authentication is required to save an assessment.' using errcode = '42501';
+  end if;
+
+  insert into public.assessments (
+    id, patient_id, assessment_date, classification, classification_reason,
+    facial_eye, facial_mouth, notes
+  ) values (
+    assessment_id,
+    patient_id,
+    (assessment ->> 'date')::timestamptz,
+    assessment ->> 'severity',
+    assessment ->> 'severityReason',
+    assessment_input -> 'facial' ->> 'eyeAsymmetry',
+    assessment_input -> 'facial' ->> 'mouthAsymmetry',
+    coalesce(assessment_input ->> 'notes', '')
+  ) on conflict (id) do nothing;
+
+  insert into public.functional_assessments (
+    assessment_id, upper_limb, lower_limb, balance, mobility, notes
+  ) values (
+    assessment_id,
+    functional ->> 'upperLimb',
+    functional ->> 'lowerLimb',
+    functional ->> 'balance',
+    functional ->> 'mobility',
+    coalesce(assessment_input ->> 'notes', '')
+  ) on conflict (assessment_id) do nothing;
+
+  insert into public.recommendations (assessment_id, exercise_id, reason)
+  select
+    assessment_id,
+    (recommendation -> 'exercise' ->> 'id')::integer,
+    coalesce((
+      select string_agg(reason, ' ')
+      from jsonb_array_elements_text(recommendation -> 'reasons') as reasons(reason)
+    ), '')
+  from jsonb_array_elements(coalesce(assessment -> 'recommendations', '[]'::jsonb)) as recommendation
+  on conflict (assessment_id, exercise_id) do nothing;
+end;
+$$;
+
+revoke all on function public.save_assessment(jsonb) from public, anon;
+grant execute on function public.save_assessment(jsonb) to authenticated;
+
+notify pgrst, 'reload schema';

@@ -22,6 +22,4 @@ The rules and sample exercise information are a prototype decision aid, not clin
 
 ## Authentication and storage
 
-With Supabase URL and anon/publishable key configured, the app uses Supabase Auth and PostgreSQL. Apply [`supabase-schema.sql`](supabase-schema.sql) to create the normalized tables, foreign keys, sample exercises, and row-level security policies. Each assessment belongs to a patient row linked to one Auth user. Assessment rows are inserted as new records and are not updated by the app.
-
-Without those environment variables, the app uses local browser accounts and patient-scoped `localStorage` so the prototype can be demonstrated without a Supabase project. This local mode is browser-specific and is not appropriate for production or real patient data.
+The app requires the Supabase URL and anon/publishable key and an internet connection. It uses Supabase Auth and PostgreSQL for patient profiles, assessments, exercise sessions, and recommendations. Apply [`supabase-schema.sql`](supabase-schema.sql) to create or update the tables, atomic assessment-save function, sample exercises, and row-level security policies. Each assessment belongs to a patient row linked to one Auth user. Assessment rows are inserted as new records and are not updated by the app. The app has no local-account or offline assessment mode.

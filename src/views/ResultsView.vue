@@ -4,8 +4,7 @@
       <p class="text-sm font-semibold uppercase text-blue-700">Classification</p>
       <h1 class="mt-1 text-3xl font-bold">Assessment results</h1>
       <p class="mt-2 text-slate-600">{{ formatDate(assessment.date) }}</p>
-      <p v-if="assessment.syncStatus === 'pending'" class="mt-3 rounded-xl bg-orange-50 p-3 text-sm text-orange-900">Sync Pending — this record is encrypted on this device and will be sent to Supabase when the connection returns.</p>
-      <p v-else-if="assessment.syncStatus === 'synced'" class="mt-3 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-900">Saved to Supabase and cached securely for offline history on this device session.</p>
+      <p class="mt-3 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-900">Saved to Supabase.</p>
     </header>
 
     <article class="card">

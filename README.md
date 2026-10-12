@@ -10,24 +10,25 @@ Facial observations can contribute to the overall system classification. Exercis
 
 ## Run locally
 
+Configure the Supabase project as described below before using the app. Login and patient records require an internet connection; the app does not support local-only accounts or offline assessment saves.
+
 ```bash
 npm install
 npm run dev
 ```
-
-Without Supabase credentials, the app uses browser-local prototype accounts and patient-scoped local storage. Data remains in that browser and is not suitable for production or shared deployment.
 
 ## Configure Supabase
 
 The Supabase JavaScript package is already installed. To enable Supabase Authentication and PostgreSQL:
 
 1. Create a Supabase project.
-2. In the Supabase SQL Editor, run [`docs/supabase-schema.sql`](docs/supabase-schema.sql). It creates the patient, assessment, functional assessment, recommendation, and exercise tables, enables row-level security, and seeds the exercise catalogue.
+2. In the Supabase SQL Editor, run [`docs/supabase-schema.sql`](docs/supabase-schema.sql). It creates missing tables, reapplies row-level security policies, installs the atomic assessment-save function, and seeds the exercise catalogue. It can be rerun on an existing StrokeGuard database without deleting its records.
 3. Enable Email in Authentication → Providers. For a thesis demonstration, either complete email verification during signup or disable email confirmation in the Supabase Auth settings.
 4. Copy `.env.example` to `.env.local`, then set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` from the Supabase project's API settings.
 5. Restart the Vite server. Never put a Supabase service-role key in this frontend project.
 
-When the two variables are present, signup/login use Supabase Auth, patient information is stored in `patients`, and assessments and recommendation links are stored in PostgreSQL. RLS policies limit reads and inserts to the authenticated patient's own records.
+Signup/login use Supabase Auth. Patient information, assessments, exercise sessions, and recommendation links are stored in PostgreSQL. RLS policies limit access to the authenticated patient's own records.
+For the complete online-only setup and verification steps, see [`docs/online-only.md`](docs/online-only.md).
 
 ## Build
 
@@ -39,7 +40,7 @@ npm run build
 
 - `src/services/rulesEngine.ts` — deterministic classification and area-matched exercise rules
 - `src/data/exercises.ts` — exercise catalogue and instructions
-- `src/services/storage.ts` — patient-scoped local and Supabase assessment storage
+- `src/services/storage.ts` — online, patient-scoped Supabase data access
 - `src/stores/auth.ts` — authentication and patient information
 - `src/views/AssessmentView.vue` — step-by-step assessment
 - `src/views/ResultsView.vue` — classification and functional findings

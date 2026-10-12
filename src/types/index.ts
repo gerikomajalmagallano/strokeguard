@@ -48,7 +48,6 @@ export interface AssessmentResult {
   severity: Severity
   severityReason: string
   recommendations: Recommendation[]
-  syncStatus?: 'pending' | 'synced'
 }
 
 export interface ExerciseSession {
