@@ -187,10 +187,10 @@ security invoker
 set search_path = public, pg_temp
 as $$
 declare
-  assessment_id uuid := (assessment ->> 'id')::uuid;
-  patient_id uuid := (assessment ->> 'patientId')::uuid;
-  assessment_input jsonb := assessment -> 'input';
-  functional jsonb := assessment_input -> 'functional';
+  v_assessment_id uuid := (assessment ->> 'id')::uuid;
+  v_patient_id uuid := (assessment ->> 'patientId')::uuid;
+  v_assessment_input jsonb := assessment -> 'input';
+  v_functional jsonb := v_assessment_input -> 'functional';
 begin
   if auth.uid() is null then
     raise exception 'Authentication is required to save an assessment.' using errcode = '42501';
@@ -200,30 +200,30 @@ begin
     id, patient_id, assessment_date, classification, classification_reason,
     facial_eye, facial_mouth, notes
   ) values (
-    assessment_id,
-    patient_id,
+    v_assessment_id,
+    v_patient_id,
     (assessment ->> 'date')::timestamptz,
     assessment ->> 'severity',
     assessment ->> 'severityReason',
-    assessment_input -> 'facial' ->> 'eyeAsymmetry',
-    assessment_input -> 'facial' ->> 'mouthAsymmetry',
-    coalesce(assessment_input ->> 'notes', '')
+    v_assessment_input -> 'facial' ->> 'eyeAsymmetry',
+    v_assessment_input -> 'facial' ->> 'mouthAsymmetry',
+    coalesce(v_assessment_input ->> 'notes', '')
   ) on conflict (id) do nothing;
 
   insert into public.functional_assessments (
     assessment_id, upper_limb, lower_limb, balance, mobility, notes
   ) values (
-    assessment_id,
-    functional ->> 'upperLimb',
-    functional ->> 'lowerLimb',
-    functional ->> 'balance',
-    functional ->> 'mobility',
-    coalesce(assessment_input ->> 'notes', '')
+    v_assessment_id,
+    v_functional ->> 'upperLimb',
+    v_functional ->> 'lowerLimb',
+    v_functional ->> 'balance',
+    v_functional ->> 'mobility',
+    coalesce(v_assessment_input ->> 'notes', '')
   ) on conflict (assessment_id) do nothing;
 
   insert into public.recommendations (assessment_id, exercise_id, reason)
   select
-    assessment_id,
+    v_assessment_id,
     (recommendation -> 'exercise' ->> 'id')::integer,
     coalesce((
       select string_agg(reason, ' ')

@@ -6,6 +6,7 @@ StrokeGuard requires an internet connection and a configured Supabase project fo
 
 1. Create or open the Supabase project used by the app.
 2. In the Supabase SQL Editor, run [`supabase-schema.sql`](./supabase-schema.sql). The script creates any missing tables, reapplies the patient-scoped row-level security policies, installs the atomic assessment-save function, seeds the exercise catalogue, and refreshes the API schema cache. It can be run again for an existing StrokeGuard database without deleting records.
+   If saving an assessment reports an ambiguous `assessment_id` reference, rerun this script to replace the database function, then retry the save.
 3. Enable Email in Authentication → Providers. Complete email verification during signup, or disable email confirmation for a thesis demonstration.
 4. Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in `.env.local` using the project's API settings. Restart the development server after changing environment variables.
 
