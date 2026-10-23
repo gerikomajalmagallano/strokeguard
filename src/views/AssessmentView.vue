@@ -2,56 +2,46 @@
   <section class="mx-auto max-w-4xl space-y-6">
     <header>
       <p class="text-sm font-semibold uppercase text-blue-700">New assessment</p>
-      <h1 class="mt-1 text-3xl font-bold">Functional assessment</h1>
-      <p class="mt-2 text-slate-600">Record findings to generate a transparent, rules-based classification and exercise guidance.</p>
+      <h1 class="mt-1 text-3xl font-bold">Lower-limb assessment</h1>
+      <p class="mt-2 text-slate-600">Answer all four questions to receive transparent, rules-based exercise guidance.</p>
     </header>
 
-    <ol class="grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label="Assessment progress">
-      <li v-for="(step, index) in steps" :key="step" class="flex items-center gap-2 border-b-2 py-3 text-sm" :class="activeStep === index + 1 ? 'border-blue-700 font-semibold text-blue-800' : activeStep > index + 1 ? 'border-teal-600 text-teal-800' : 'border-slate-200 text-slate-500'">
-        <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100">{{ index + 1 }}</span><span>{{ step }}</span>
-      </li>
-    </ol>
-
     <form class="space-y-5" @submit.prevent="submit">
-      <div v-if="activeStep === 1" class="card space-y-5">
+      <div class="card space-y-5">
         <div>
-          <h2 class="text-xl font-bold">Facial observation</h2>
-          <p class="mt-1 text-sm text-slate-600">Optional structured observation contributes to overall classification only. It does not select exercise areas.</p>
+          <h2 class="text-xl font-bold">Lower-limb functional questions</h2>
+          <p class="mt-1 text-sm text-slate-600">These are proposed self-reported findings, not a clinically validated assessment instrument.</p>
         </div>
-        <fieldset v-for="item in facialItems" :key="item.key">
-          <legend class="label">{{ item.label }}</legend>
+        <fieldset v-for="item in questions" :key="item.key" :aria-describedby="validationErrors.includes(item.question) ? `${item.key}-error` : undefined">
+          <legend class="label">{{ item.question }} <span class="text-red-700" aria-hidden="true">*</span></legend>
           <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <button v-for="level in severities" :key="level" type="button" class="option justify-center" :aria-pressed="form.facial[item.key] === level" :class="form.facial[item.key] === level ? 'border-blue-600 bg-blue-50 text-blue-800' : ''" @click="form.facial[item.key] = level">{{ level }}</button>
+            <label v-for="option in item.options" :key="option" class="option justify-center text-center" :class="form.findings[item.key] === option ? 'border-blue-600 bg-blue-50 text-blue-800' : ''">
+              <input
+                class="sr-only"
+                type="radio"
+                :name="item.key"
+                :value="option"
+                :checked="form.findings[item.key] === option"
+                :required="option === item.options[0]"
+                :aria-invalid="validationErrors.includes(item.question)"
+                @change="setAnswer(item.key, option)"
+              >
+              <span class="rounded peer-focus-visible:ring-2 peer-focus-visible:ring-teal-700 peer-focus-visible:ring-offset-2">{{ option }}</span>
+            </label>
           </div>
+          <p v-if="validationErrors.includes(item.question)" :id="`${item.key}-error`" class="mt-2 text-sm text-red-700">Select an answer to continue.</p>
         </fieldset>
-        <div class="rounded-xl bg-amber-50 p-4 text-sm leading-6 text-amber-900">StrokeGuard is a research prototype. It does not diagnose stroke or replace professional medical advice.</div>
-      </div>
-
-      <div v-else class="space-y-5">
-        <div class="card">
-          <h2 class="text-xl font-bold">Functional findings</h2>
-          <p class="mt-1 text-sm text-slate-600">Select one option for each area. Exercise recommendations are based on these findings.</p>
-          <div class="mt-5 space-y-6">
-            <fieldset v-for="item in functionalItems" :key="item.key">
-              <legend class="label">{{ item.label }}</legend>
-              <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                <button v-for="option in item.options" :key="option" type="button" class="option justify-center text-center" :aria-pressed="form.functional[item.key] === option" :class="form.functional[item.key] === option ? 'border-blue-600 bg-blue-50 text-blue-800' : ''" @click="setFunctional(item.key, option)">{{ option }}</button>
-              </div>
-            </fieldset>
-          </div>
-        </div>
-        <div class="card">
+        <div>
           <label for="assessment-notes" class="label">Notes (optional)</label>
-          <textarea id="assessment-notes" v-model="form.notes" rows="3" class="field" placeholder="Brief observation"></textarea>
+          <textarea id="assessment-notes" v-model="form.notes" rows="3" class="field" placeholder="Optional notes about these lower-limb findings"></textarea>
         </div>
+        <div class="rounded-xl bg-amber-50 p-4 text-sm leading-6 text-amber-900">StrokeGuard is a research prototype. It does not diagnose stroke or replace professional medical advice.</div>
       </div>
 
       <p v-if="saveError" role="alert" class="text-sm text-red-700">{{ saveError }}</p>
       <div class="flex flex-wrap justify-between gap-3">
         <RouterLink to="/dashboard" class="btn-secondary">Cancel</RouterLink>
-        <button v-if="activeStep === 2" type="button" class="btn-secondary" @click="activeStep = 1">Back</button>
-        <button v-if="activeStep === 1" type="button" class="btn-primary px-6" @click="activeStep = 2">Continue to functional assessment</button>
-        <button v-else class="btn-primary px-6" :disabled="saving" type="submit">{{ saving ? 'Saving…' : 'Save assessment and view classification' }}</button>
+        <button class="btn-primary px-6" :disabled="saving" type="submit">{{ saving ? 'Saving…' : 'Save assessment and view results' }}</button>
       </div>
     </form>
   </section>
@@ -60,35 +50,57 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { classifyAssessment, generateRecommendations } from '@/services/rulesEngine'
+import { evaluateAssessment } from '@/services/rulesEngine'
 import { useAppStore } from '@/stores/app'
 import { useAuthStore } from '@/stores/auth'
-import type { AssessmentInput, FunctionalFindings, Severity } from '@/types'
+import type { AssessmentFindings, AssessmentInput, FindingAnswer } from '@/types'
 
 const router = useRouter()
 const store = useAppStore()
 const auth = useAuthStore()
-const activeStep = ref(1)
 const saving = ref(false)
 const saveError = ref('')
-const steps = ['Assessment', 'Functional Assessment', 'Classification', 'Recommendations']
-const severities: Severity[] = ['Normal', 'Mild', 'Moderate', 'Severe']
-const facialItems = [
-  { key: 'eyeAsymmetry', label: 'Eye asymmetry' },
-  { key: 'mouthAsymmetry', label: 'Mouth asymmetry' }
-] as const
-const functionalItems = [
-  { key: 'upperLimb', label: 'Upper limb', options: severities },
-  { key: 'lowerLimb', label: 'Lower limb', options: severities },
-  { key: 'balance', label: 'Balance', options: severities },
-  { key: 'mobility', label: 'Mobility', options: ['Independent', 'Needs assistance', 'Unable'] }
+const validationErrors = ref<string[]>([])
+const difficultyOptions = ['Mild difficulty', 'Moderate difficulty', 'Severe difficulty'] as const
+const questions = [
+  {
+    key: 'legMovement',
+    question: 'How would you describe the difficulty moving the affected leg?',
+    options: ['Normal', ...difficultyOptions]
+  },
+  {
+    key: 'standing',
+    question: 'How would you describe the difficulty maintaining a standing position?',
+    options: ['No reported difficulty', ...difficultyOptions]
+  },
+  {
+    key: 'walking',
+    question: 'How would you describe the difficulty walking?',
+    options: ['No reported difficulty', ...difficultyOptions]
+  },
+  {
+    key: 'sittingToStanding',
+    question: 'How would you describe the difficulty rising from a chair?',
+    options: ['No reported difficulty', ...difficultyOptions]
+  }
 ] as const
 
 const form = reactive<AssessmentInput>({
-  facial: { eyeAsymmetry: 'Normal', mouthAsymmetry: 'Normal' },
-  functional: { upperLimb: 'Normal', lowerLimb: 'Normal', balance: 'Normal', mobility: 'Independent' },
+  findings: {
+    legMovement: null,
+    standing: null,
+    walking: null,
+    sittingToStanding: null
+  },
   notes: ''
 })
+
+function setAnswer(key: keyof AssessmentFindings, answer: FindingAnswer) {
+  form.findings[key] = answer
+  const question = questions.find(item => item.key === key)?.question
+  if (question) validationErrors.value = validationErrors.value.filter(item => item !== question)
+  if (!validationErrors.value.length) saveError.value = ''
+}
 
 function getSaveErrorMessage(error: unknown): string {
   if (error instanceof Error) return error.message
@@ -103,11 +115,13 @@ function getSaveErrorMessage(error: unknown): string {
   return 'The assessment could not be saved.'
 }
 
-function setFunctional<K extends keyof FunctionalFindings>(key: K, value: FunctionalFindings[K] | string) {
-  form.functional[key] = value as FunctionalFindings[K]
-}
-
 async function submit() {
+  const evaluation = evaluateAssessment(form)
+  validationErrors.value = evaluation.missingAnswers
+  if (evaluation.missingAnswers.length) {
+    saveError.value = 'Answer all four required questions before saving.'
+    return
+  }
   if (!auth.profile?.id) {
     saveError.value = auth.authError || 'Your signed-in patient profile is unavailable. Reconnect and sign in again before saving.'
     return
@@ -115,15 +129,12 @@ async function submit() {
   saving.value = true
   saveError.value = ''
   try {
-    const result = classifyAssessment(form)
     const assessment = {
       id: crypto.randomUUID(),
       patientId: auth.profile.id,
       date: new Date().toISOString(),
       input: JSON.parse(JSON.stringify(form)) as AssessmentInput,
-      severity: result.severity,
-      severityReason: result.reason,
-      recommendations: generateRecommendations(form)
+      recommendations: evaluation.recommendations
     }
     await store.saveAssessment(assessment)
     await router.push(`/results/${assessment.id}`)

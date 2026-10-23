@@ -1,6 +1,7 @@
 import type { AssessmentResult, ExerciseSession } from '@/types'
 import type { UserProfile } from '@/types/auth'
 import { exercises } from '@/data/exercises'
+import { evaluateAssessment } from '@/services/rulesEngine'
 import { supabase, supabaseConfigured } from '@/services/supabase'
 
 function requireOnlineSupabase() {
@@ -15,32 +16,30 @@ function requireOnlineSupabase() {
 
 function fromDatabaseRow(row: any): AssessmentResult {
   const functional = Array.isArray(row.functional_assessments) ? row.functional_assessments[0] : row.functional_assessments
-  const recommendations = (row.recommendations ?? []).flatMap((item: any) => {
+  const storedRecommendations = (row.recommendations ?? []).flatMap((item: any) => {
     const exercise = exercises.find(candidate => candidate.id === item.exercise_id)
     return exercise ? [{
       exercise,
       reasons: [item.reason],
-      priority: row.classification === 'Severe' ? 'High' as const :
-        row.classification === 'Moderate' ? 'Medium' as const : 'Supportive' as const
+      matches: []
     }] : []
   })
+  const input = {
+    findings: {
+      legMovement: functional?.leg_movement ?? null,
+      standing: functional?.standing ?? null,
+      walking: functional?.walking ?? null,
+      sittingToStanding: functional?.sitting_to_standing ?? null
+    },
+    notes: functional?.notes || row.notes || ''
+  }
+  const evaluation = evaluateAssessment(input)
   return {
     id: row.id,
     patientId: row.patient_id,
     date: row.assessment_date,
-    severity: row.classification,
-    severityReason: row.classification_reason,
-    input: {
-      facial: { eyeAsymmetry: row.facial_eye, mouthAsymmetry: row.facial_mouth },
-      functional: {
-        upperLimb: functional?.upper_limb ?? 'Normal',
-        lowerLimb: functional?.lower_limb ?? 'Normal',
-        balance: functional?.balance ?? 'Normal',
-        mobility: functional?.mobility ?? 'Independent'
-      },
-      notes: functional?.notes ?? row.notes ?? ''
-    },
-    recommendations
+    input,
+    recommendations: evaluation.missingAnswers.length ? storedRecommendations : evaluation.recommendations
   }
 }
 

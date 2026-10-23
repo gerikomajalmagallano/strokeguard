@@ -1,71 +1,97 @@
 import { exercises } from '@/data/exercises'
-import type { AssessmentInput, Recommendation, Severity } from '@/types'
+import type { AssessmentEvaluation, AssessmentFindings, AssessmentInput, FindingAnswer, Recommendation } from '@/types'
 
-const severityRank: Record<Severity, number> = {
-  Normal: 0,
-  Mild: 1,
-  Moderate: 2,
-  Severe: 3
+const activities: Array<{ key: keyof AssessmentFindings; label: string; question: string }> = [
+  { key: 'legMovement', label: 'Leg movement', question: 'How would you describe the difficulty moving the affected leg?' },
+  { key: 'standing', label: 'Standing', question: 'How would you describe the difficulty maintaining a standing position?' },
+  { key: 'walking', label: 'Walking', question: 'How would you describe the difficulty walking?' },
+  { key: 'sittingToStanding', label: 'Sitting to standing', question: 'How would you describe the difficulty rising from a chair?' }
+]
+
+const acceptedAnswers: FindingAnswer[] = [
+  'Normal',
+  'No reported difficulty',
+  'Mild difficulty',
+  'Moderate difficulty',
+  'Severe difficulty'
+]
+
+const activityTerms: Record<keyof AssessmentFindings, string[]> = {
+  legMovement: ['ankle', 'dorsiflexion', 'leg cycling'],
+  standing: ['stand'],
+  walking: ['walk'],
+  sittingToStanding: ['sit-to-stand', 'rising from a chair']
 }
 
-function functionalSeverities(input: AssessmentInput): Array<{ area: string; severity: Severity }> {
-  const mobilitySeverity: Record<AssessmentInput['functional']['mobility'], Severity> = {
-    Independent: 'Normal',
-    'Needs assistance': 'Moderate',
-    Unable: 'Severe'
-  }
-
-  return [
-    { area: 'Upper Limb', severity: input.functional.upperLimb },
-    { area: 'Lower Limb', severity: input.functional.lowerLimb },
-    { area: 'Balance', severity: input.functional.balance },
-    { area: 'Mobility', severity: mobilitySeverity[input.functional.mobility] }
-  ]
+function exerciseText(exercise: Recommendation['exercise']): string {
+  return [exercise.name, exercise.benefits, ...exercise.instructions].join(' ').toLowerCase()
 }
 
-export function classifyAssessment(input: AssessmentInput): { severity: Severity; reason: string } {
-  const values = [
-    input.facial.eyeAsymmetry,
-    input.facial.mouthAsymmetry,
-    ...functionalSeverities(input).map(item => item.severity)
-  ]
-  const severity = values.reduce((highest, current) =>
-    severityRank[current] > severityRank[highest] ? current : highest, 'Normal' as Severity)
-  const reason = `Overall classification is based on the highest recorded facial or functional finding (${severity.toLowerCase()}).`
+function matchesActivity(exercise: Recommendation['exercise'], activity: keyof AssessmentFindings): boolean {
+  if (exercise.targetArea !== 'Lower Limb') return false
 
-  return { severity, reason }
+  const text = exerciseText(exercise)
+  if (activity === 'standing' && /sit.to.stand/.test(exercise.name.toLowerCase())) return false
+  return activityTerms[activity].some(term => text.includes(term))
 }
 
-export function generateRecommendations(input: AssessmentInput): Recommendation[] {
-  const result: Recommendation[] = []
-  const difficultyRank: Record<Recommendation['exercise']['difficulty'], number> = { Easy: 0, Moderate: 1, Advanced: 2 }
-  const exerciseOrder: Record<string, number[]> = {
-    'Upper Limb': [12, 11],
-    'Lower Limb': [5, 4, 6, 3, 1, 2],
-    Balance: [7, 8],
-    Mobility: [9, 10]
+function isNoDifficulty(answer: FindingAnswer): boolean {
+  return answer === 'Normal' || answer === 'No reported difficulty'
+}
+
+export function validateAssessmentInput(input: AssessmentInput | null | undefined): string[] {
+  return activities
+    .filter(activity => !acceptedAnswers.includes(input?.findings?.[activity.key] as FindingAnswer))
+    .map(activity => activity.question)
+}
+
+export function evaluateAssessment(input: AssessmentInput | null | undefined, exerciseCatalog = exercises): AssessmentEvaluation {
+  const missingAnswers = validateAssessmentInput(input)
+  if (missingAnswers.length) {
+    return {
+      recommendations: [],
+      missingAnswers,
+      unmatchedFindings: [],
+      noDifficultyReported: false,
+      summary: 'Complete all four required answers to summarize findings and evaluate exercise rules.'
+    }
   }
 
-  for (const finding of functionalSeverities(input)) {
-    if (finding.severity === 'Normal') continue
+  const recommendationsById = new Map<number, Recommendation>()
+  const unmatchedFindings: AssessmentEvaluation['unmatchedFindings'] = []
 
-    const preferredDifficulty = finding.severity === 'Moderate' ? 'Moderate' : 'Easy'
-    const preferredOrder = exerciseOrder[finding.area] ?? []
-    const exercise = exercises
-      .filter(item => item.targetArea === finding.area && difficultyRank[item.difficulty] <= difficultyRank[preferredDifficulty])
-      .sort((a, b) =>
-        Math.abs(difficultyRank[a.difficulty] - difficultyRank[preferredDifficulty]) - Math.abs(difficultyRank[b.difficulty] - difficultyRank[preferredDifficulty]) ||
-        preferredOrder.indexOf(a.id) - preferredOrder.indexOf(b.id)
-      )[0]
+  for (const activity of activities) {
+    const answer = input?.findings?.[activity.key] as FindingAnswer
+    if (isNoDifficulty(answer)) continue
 
-    if (!exercise) continue
-    const areaName = finding.area.toLowerCase().replace('upper limb', 'upper-limb').replace('lower limb', 'lower-limb')
-    result.push({
-      exercise,
-      reasons: [`Recommended because the functional assessment identified ${finding.severity.toLowerCase()} ${areaName} difficulty.`],
-      priority: finding.severity === 'Severe' ? 'High' : finding.severity === 'Moderate' ? 'Medium' : 'Supportive'
-    })
+    const matches = exerciseCatalog.filter(exercise => matchesActivity(exercise, activity.key))
+    if (!matches.length) {
+      unmatchedFindings.push({ activity: activity.label, answer })
+      continue
+    }
+
+    for (const exercise of matches) {
+      const recommendation = recommendationsById.get(exercise.id) ?? { exercise, reasons: [], matches: [] }
+      recommendation.reasons.push(`Matches the ${activity.label.toLowerCase()} finding (${answer}) because the exercise's name, instructions, or stated benefit refers to this activity.`)
+      recommendation.matches.push({ activity: activity.key, label: activity.label, answer })
+      recommendationsById.set(exercise.id, recommendation)
+    }
   }
 
-  return result
+  const recommendations = [...recommendationsById.values()]
+  const reported = activities.flatMap(activity => {
+    const answer = input?.findings?.[activity.key] as FindingAnswer
+    return isNoDifficulty(answer) ? [] : [`${activity.label}: ${answer}`]
+  })
+  const noDifficultyReported = reported.length === 0
+
+  return {
+    recommendations,
+    missingAnswers,
+    unmatchedFindings,
+    noDifficultyReported,
+    summary: noDifficultyReported
+      ? 'No difficulty was reported for any of the four lower-limb activities.'
+      : `Reported difficulties: ${reported.join('; ')}.`
+  }
 }

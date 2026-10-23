@@ -1,23 +1,16 @@
-export type Severity = 'Normal' | 'Mild' | 'Moderate' | 'Severe'
+export type FindingAnswer = 'Normal' | 'No reported difficulty' | 'Mild difficulty' | 'Moderate difficulty' | 'Severe difficulty'
 export type Difficulty = 'Easy' | 'Moderate' | 'Advanced'
-export type ExerciseCategory = 'Range of Motion' | 'Strength' | 'Balance' | 'Mobility'
-export type MobilityLevel = 'Independent' | 'Needs assistance' | 'Unable'
+export type ExerciseCategory = 'Range of Motion' | 'Strength' | 'Mobility'
 
-export interface FunctionalFindings {
-  upperLimb: Severity
-  lowerLimb: Severity
-  balance: Severity
-  mobility: MobilityLevel
-}
-
-export interface FacialFindings {
-  eyeAsymmetry: Severity
-  mouthAsymmetry: Severity
+export interface AssessmentFindings {
+  legMovement: FindingAnswer | null
+  standing: FindingAnswer | null
+  walking: FindingAnswer | null
+  sittingToStanding: FindingAnswer | null
 }
 
 export interface AssessmentInput {
-  facial: FacialFindings
-  functional: FunctionalFindings
+  findings: AssessmentFindings
   notes?: string
 }
 
@@ -25,19 +18,34 @@ export interface Exercise {
   id: number
   name: string
   category: ExerciseCategory
-  targetArea: string
+  targetArea: 'Lower Limb'
   difficulty: Difficulty
   duration: string
   repetitions: string
   instructions: string[]
   benefits: string
   safety: string
+  source?: string
+}
+
+export interface RecommendationMatch {
+  activity: keyof AssessmentFindings
+  label: string
+  answer: FindingAnswer
 }
 
 export interface Recommendation {
   exercise: Exercise
   reasons: string[]
-  priority: 'High' | 'Medium' | 'Supportive'
+  matches: RecommendationMatch[]
+}
+
+export interface AssessmentEvaluation {
+  recommendations: Recommendation[]
+  missingAnswers: string[]
+  unmatchedFindings: Array<{ activity: string; answer: FindingAnswer }>
+  noDifficultyReported: boolean
+  summary: string
 }
 
 export interface AssessmentResult {
@@ -45,8 +53,6 @@ export interface AssessmentResult {
   patientId: string
   date: string
   input: AssessmentInput
-  severity: Severity
-  severityReason: string
   recommendations: Recommendation[]
 }
 

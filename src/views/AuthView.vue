@@ -4,7 +4,7 @@
       <div class="bg-slate-900 p-8 text-white sm:p-10">
         <p class="text-sm font-semibold uppercase tracking-[0.2em] text-blue-300">StrokeGuard</p>
         <h1 class="mt-4 text-3xl font-bold tracking-tight">Patient assessment and decision support.</h1>
-        <p class="mt-4 max-w-md text-sm leading-6 text-slate-300">A research prototype for functional assessment, transparent classification, and rules-based exercise guidance.</p>
+        <p class="mt-4 max-w-md text-sm leading-6 text-slate-300">A research prototype for four-question lower-limb reporting and rules-based exercise guidance.</p>
 
         <div class="mt-8 space-y-4 text-sm text-slate-200">
           <div class="flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500/20 text-blue-300">1</span> Sign in or create an account</div>

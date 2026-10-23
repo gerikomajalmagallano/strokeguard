@@ -74,34 +74,10 @@ export const exercises: Exercise[] = [
     safety: 'Use support throughout. Avoid deep bending if it causes pain or instability.'
   },
   {
-    id: 7,
-    name: 'Static Standing Balance',
-    category: 'Balance',
-    targetArea: 'Balance',
-    difficulty: 'Easy',
-    duration: '2–4 minutes',
-    repetitions: '20–30 seconds per bout',
-    instructions: ['Stand near a stable support.', 'Keep your feet comfortable and your posture upright.', 'Hold the position for the planned time.', 'Rest before repeating.'],
-    benefits: 'Practices controlled standing and postural stability.',
-    safety: 'Keep support available and have someone nearby when balance is limited.'
-  },
-  {
-    id: 8,
-    name: 'Lateral Weight Shifts',
-    category: 'Balance',
-    targetArea: 'Balance',
-    difficulty: 'Easy',
-    duration: '3–5 minutes',
-    repetitions: '10–20 shifts',
-    instructions: ['Stand with stable support.', 'Shift your weight slowly toward one side.', 'Return to the center.', 'Repeat toward the other side.'],
-    benefits: 'Practices controlled weight transfer needed for standing and stepping.',
-    safety: 'Use a stable support and stop if you feel unsafe or dizzy.'
-  },
-  {
     id: 9,
     name: 'Supported Over-Ground Walking',
     category: 'Mobility',
-    targetArea: 'Mobility',
+    targetArea: 'Lower Limb',
     difficulty: 'Moderate',
     duration: '5–10 minutes',
     repetitions: 'Short, supervised bouts',
@@ -113,36 +89,12 @@ export const exercises: Exercise[] = [
     id: 10,
     name: 'Seated Leg Cycling',
     category: 'Mobility',
-    targetArea: 'Mobility',
+    targetArea: 'Lower Limb',
     difficulty: 'Advanced',
     duration: '5–10 minutes',
     repetitions: 'Short intervals',
     instructions: ['Use an appropriate seated cycle device.', 'Begin with low resistance.', 'Pedal at a comfortable pace.', 'Rest between intervals as needed.'],
     benefits: 'Provides low-impact lower-limb endurance practice.',
     safety: 'Use only when appropriate for the person and cleared by a qualified professional, especially soon after stroke.'
-  },
-  {
-    id: 11,
-    name: 'Seated Arm Raises',
-    category: 'Range of Motion',
-    targetArea: 'Upper Limb',
-    difficulty: 'Easy',
-    duration: '2–3 minutes',
-    repetitions: '8 repetitions',
-    instructions: ['Sit with your back supported.', 'Raise one arm only as far as comfortable.', 'Lower it slowly and repeat with the other arm.'],
-    benefits: 'Practices comfortable shoulder movement while seated.',
-    safety: 'Keep the movement pain-free and ask a professional about any shoulder restrictions.'
-  },
-  {
-    id: 12,
-    name: 'Supported Reach',
-    category: 'Strength',
-    targetArea: 'Upper Limb',
-    difficulty: 'Moderate',
-    duration: '3–5 minutes',
-    repetitions: '6–8 reaches per side',
-    instructions: ['Sit at a stable table with your forearm supported.', 'Reach toward a nearby object without leaning far.', 'Return to the starting position with control.'],
-    benefits: 'Practices controlled reaching for everyday tasks.',
-    safety: 'Use a stable seat and keep objects within a comfortable reach.'
   }
 ]

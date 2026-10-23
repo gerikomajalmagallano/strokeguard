@@ -1,36 +1,46 @@
 <template>
   <section v-if="assessment" class="mx-auto max-w-4xl space-y-5">
     <header>
-      <p class="text-sm font-semibold uppercase text-blue-700">Classification</p>
+      <p class="text-sm font-semibold uppercase text-blue-700">Lower-limb decision support</p>
       <h1 class="mt-1 text-3xl font-bold">Assessment results</h1>
       <p class="mt-2 text-slate-600">{{ formatDate(assessment.date) }}</p>
-      <p class="mt-3 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-900">Saved to Supabase.</p>
+      <p class="mt-3 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-900">Assessment saved to Supabase.</p>
     </header>
 
     <article class="card">
-      <p class="text-sm font-semibold uppercase text-slate-500">Overall classification</p>
-      <div class="mt-2 flex flex-wrap items-center gap-3">
-        <h2 class="text-3xl font-bold">{{ assessment.severity }}</h2>
-        <span class="badge" :class="severityClass">System classification</span>
-      </div>
-      <p class="mt-3 text-sm leading-6 text-slate-600">{{ assessment.severityReason }}</p>
+      <h2 class="text-xl font-bold">Summary of reported findings</h2>
+      <p class="mt-2 text-sm leading-6 text-slate-600">{{ evaluation.summary }}</p>
+      <p v-if="evaluation.missingAnswers.length" class="mt-3 text-sm text-amber-800">This historical record does not contain all four answers. Recommendations cannot be re-evaluated for missing answers.</p>
+      <p v-if="evaluation.unmatchedFindings.length" class="mt-3 text-sm text-amber-800">No matching exercise in the existing library was found for: {{ evaluation.unmatchedFindings.map(item => item.activity).join(', ') }}.</p>
     </article>
 
     <article class="card">
-      <h2 class="text-xl font-bold">Functional findings</h2>
+      <h2 class="text-xl font-bold">Recorded answers</h2>
       <dl class="mt-4 grid gap-3 sm:grid-cols-2">
-        <div v-for="finding in functionalFindings" :key="finding.label" class="rounded-xl border border-slate-200 p-4">
+        <div v-for="finding in recordedFindings" :key="finding.key" class="rounded-xl border border-slate-200 p-4">
           <dt class="text-sm text-slate-500">{{ finding.label }}</dt>
-          <dd class="mt-1 font-semibold">{{ finding.value }}</dd>
+          <dd class="mt-1 font-semibold">{{ finding.answer ?? 'Not available in this historical record' }}</dd>
         </div>
       </dl>
-      <div class="mt-5 border-t border-slate-100 pt-4">
-        <h3 class="font-semibold">Facial observations</h3>
-        <p class="mt-1 text-sm text-slate-600">Eye: {{ assessment.input.facial.eyeAsymmetry }} · Mouth: {{ assessment.input.facial.mouthAsymmetry }}</p>
-        <p class="mt-2 text-xs leading-5 text-slate-500">Facial observations contribute to overall classification only. Exercise recommendations are selected from functional findings, not facial observations.</p>
-      </div>
       <p v-if="assessment.input.notes" class="mt-4 text-sm text-slate-600">{{ assessment.input.notes }}</p>
     </article>
+
+    <article class="card">
+      <h2 class="text-xl font-bold">{{ evaluation.missingAnswers.length ? 'Saved historical recommendations' : 'Exercises recommended by the rules' }}</h2>
+      <p v-if="evaluation.missingAnswers.length && assessment.recommendations.length" class="mt-2 text-sm text-amber-800">These recommendations predate the four-question form and were not re-evaluated by the current rules.</p>
+      <div v-if="assessment.recommendations.length" class="mt-4 space-y-4">
+        <div v-for="recommendation in assessment.recommendations" :key="recommendation.exercise.id" class="rounded-xl border border-slate-200 p-4">
+          <h3 class="font-semibold">{{ recommendation.exercise.name }}</h3>
+          <p class="mt-1 text-sm text-slate-600">{{ recommendation.exercise.benefits }}</p>
+          <p v-for="reason in recommendation.reasons" :key="reason" class="mt-2 text-sm text-slate-600">{{ reason }}</p>
+        </div>
+      </div>
+      <p v-else-if="evaluation.noDifficultyReported" class="mt-2 text-sm text-slate-600">No difficulty was reported, so the rules generated no exercise recommendation.</p>
+      <p v-else-if="evaluation.missingAnswers.length" class="mt-2 text-sm text-slate-600">No recommendations can be generated until all four answers are available.</p>
+      <p v-else class="mt-2 text-sm text-slate-600">No matching exercise exists in the current library for the reported finding(s).</p>
+    </article>
+
+    <p class="rounded-xl bg-amber-50 p-4 text-sm leading-6 text-amber-900">StrokeGuard provides research-prototype decision support. These proposed self-reported questions are not a clinically validated assessment instrument. This system does not diagnose stroke or replace professional medical advice.</p>
 
     <div class="flex flex-wrap gap-3">
       <RouterLink :to="`/recommendations/${assessment.id}`" class="btn-primary">View exercise recommendations</RouterLink>
@@ -47,25 +57,22 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { evaluateAssessment } from '@/services/rulesEngine'
 import { useAppStore } from '@/stores/app'
-import type { Severity } from '@/types'
 
 const route = useRoute()
 const store = useAppStore()
 const assessment = computed(() => store.assessments.find(item => item.id === route.params.id))
-const functionalFindings = computed(() => {
+const evaluation = computed(() => evaluateAssessment(assessment.value?.input))
+const recordedFindings = computed(() => {
   if (!assessment.value) return []
-  const functional = assessment.value.input.functional
+  const findings = assessment.value.input.findings
   return [
-    { label: 'Upper Limb', value: functional.upperLimb },
-    { label: 'Lower Limb', value: functional.lowerLimb },
-    { label: 'Balance', value: functional.balance },
-    { label: 'Mobility', value: functional.mobility }
+    { key: 'legMovement', label: 'Leg movement', answer: findings.legMovement },
+    { key: 'standing', label: 'Standing', answer: findings.standing },
+    { key: 'walking', label: 'Walking', answer: findings.walking },
+    { key: 'sittingToStanding', label: 'Sitting to standing', answer: findings.sittingToStanding }
   ]
-})
-const severityClass = computed(() => {
-  const styles: Record<Severity, string> = { Normal: 'badge-good', Mild: 'badge-mild', Moderate: 'badge-warn', Severe: 'badge-danger' }
-  return assessment.value ? styles[assessment.value.severity] : ''
 })
 function formatDate(value: string) { return new Date(value).toLocaleString() }
 onMounted(() => { if (!assessment.value) void store.refresh() })
