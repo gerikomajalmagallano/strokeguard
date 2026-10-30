@@ -65,22 +65,22 @@ const difficultyOptions = ['Mild difficulty', 'Moderate difficulty', 'Severe dif
 const questions = [
   {
     key: 'legMovement',
-    question: 'How would you describe the difficulty moving the affected leg?',
+    question: 'How hard is it to move your affected leg?',
     options: ['Normal', ...difficultyOptions]
   },
   {
     key: 'standing',
-    question: 'How would you describe the difficulty maintaining a standing position?',
+    question: 'How hard is it to stand?',
     options: ['No reported difficulty', ...difficultyOptions]
   },
   {
     key: 'walking',
-    question: 'How would you describe the difficulty walking?',
+    question: 'How hard is it to walk?',
     options: ['No reported difficulty', ...difficultyOptions]
   },
   {
     key: 'sittingToStanding',
-    question: 'How would you describe the difficulty rising from a chair?',
+    question: 'How hard is it to get up from a chair?',
     options: ['No reported difficulty', ...difficultyOptions]
   }
 ] as const

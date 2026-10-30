@@ -2,10 +2,10 @@ import { exercises } from '@/data/exercises'
 import type { AssessmentEvaluation, AssessmentFindings, AssessmentInput, FindingAnswer, Recommendation } from '@/types'
 
 const activities: Array<{ key: keyof AssessmentFindings; label: string; question: string }> = [
-  { key: 'legMovement', label: 'Leg movement', question: 'How would you describe the difficulty moving the affected leg?' },
-  { key: 'standing', label: 'Standing', question: 'How would you describe the difficulty maintaining a standing position?' },
-  { key: 'walking', label: 'Walking', question: 'How would you describe the difficulty walking?' },
-  { key: 'sittingToStanding', label: 'Sitting to standing', question: 'How would you describe the difficulty rising from a chair?' }
+  { key: 'legMovement', label: 'Leg movement', question: 'How hard is it to move your affected leg?' },
+  { key: 'standing', label: 'Standing', question: 'How hard is it to stand?' },
+  { key: 'walking', label: 'Walking', question: 'How hard is it to walk?' },
+  { key: 'sittingToStanding', label: 'Sitting to standing', question: 'How hard is it to get up from a chair?' }
 ]
 
 const acceptedAnswers: FindingAnswer[] = [
