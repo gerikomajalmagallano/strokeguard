@@ -4,14 +4,23 @@
       <div>
         <p class="text-sm font-semibold uppercase text-blue-700">StrokeGuard · Patient dashboard</p>
         <h1 class="mt-2 text-3xl font-bold">Welcome, {{ auth.profile?.fullName }}</h1>
-        <p class="mt-2 max-w-2xl text-slate-600">Answer four lower-limb questions and receive transparent, rules-based exercise guidance.</p>
+        <p class="mt-2 max-w-2xl text-slate-600">Record four lower-limb functional responses and review transparent, rules-based results.</p>
       </div>
       <RouterLink to="/assessment" class="btn-primary px-6 py-3">Start New Assessment</RouterLink>
     </div>
 
     <div class="grid gap-4 sm:grid-cols-3">
       <article class="card"><p class="text-sm text-slate-500">Last assessment</p><p class="mt-2 text-lg font-bold">{{ latest ? formatDate(latest.date) : 'Not yet completed' }}</p></article>
-      <article class="card"><p class="text-sm text-slate-500">Latest reported findings</p><p class="mt-2 text-sm font-bold">{{ latestSummary }}</p></article>
+      <article class="card">
+        <p class="text-sm text-slate-500">Latest functional responses</p>
+        <dl v-if="latest" class="mt-2 grid grid-cols-2 gap-2">
+          <div v-for="question in assessmentQuestions" :key="question.key">
+            <dt class="text-xs text-slate-500">{{ question.label }}</dt>
+            <dd class="mt-0.5 text-xs font-semibold">{{ getAnswerLabel(question.key, latest.input.findings[question.key]) }}</dd>
+          </div>
+        </dl>
+        <p v-else class="mt-2 text-sm font-bold">No assessment yet</p>
+      </article>
       <article class="card"><p class="text-sm text-slate-500">Assessments completed</p><p class="mt-2 text-2xl font-bold text-blue-800">{{ store.assessments.length }}</p></article>
     </div>
 
@@ -37,10 +46,10 @@ import { computed } from 'vue'
 import { evaluateAssessment } from '@/services/rulesEngine'
 import { useAppStore } from '@/stores/app'
 import { useAuthStore } from '@/stores/auth'
+import { assessmentQuestions, getAnswerLabel } from '@/types'
 
 const store = useAppStore()
 const auth = useAuthStore()
 const latest = computed(() => store.latestAssessment)
-const latestSummary = computed(() => latest.value ? evaluateAssessment(latest.value.input).summary : 'No result yet')
 function formatDate(value: string) { return new Date(value).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) }
 </script>

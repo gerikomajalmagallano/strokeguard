@@ -3,57 +3,76 @@
     <header>
       <p class="text-sm font-semibold uppercase text-blue-700">New assessment</p>
       <h1 class="mt-1 text-3xl font-bold">Lower-limb assessment</h1>
-      <p class="mt-2 text-slate-600">Answer all four questions to receive transparent, rules-based exercise guidance.</p>
+      <p class="mt-2 text-slate-600">Record all four functional responses and review the transparent rule outcomes.</p>
     </header>
 
     <form class="space-y-5" @submit.prevent="submit">
       <div class="card space-y-5">
         <div>
           <h2 class="text-xl font-bold">Lower-limb functional questions</h2>
-          <p class="mt-1 text-sm text-slate-600">These are proposed self-reported findings, not a clinically validated assessment instrument.</p>
+          <p class="mt-1 text-sm text-slate-600">Select one answer for each activity.</p>
         </div>
         <fieldset v-for="item in questions" :key="item.key" :aria-describedby="validationErrors.includes(item.question) ? `${item.key}-error` : undefined">
           <legend class="label">{{ item.question }} <span class="text-red-700" aria-hidden="true">*</span></legend>
-          <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <label v-for="option in item.options" :key="option" class="option justify-center text-center" :class="form.findings[item.key] === option ? 'border-blue-600 bg-blue-50 text-blue-800' : ''">
+          <div class="grid gap-2 sm:grid-cols-2">
+            <label v-for="(option, index) in item.options" :key="option.value" class="option min-h-14" :class="form.findings[item.key] === option.value ? 'border-blue-600 bg-blue-50 text-blue-900 ring-1 ring-blue-600' : ''">
               <input
-                class="sr-only"
+                class="peer sr-only"
                 type="radio"
                 :name="item.key"
-                :value="option"
-                :checked="form.findings[item.key] === option"
-                :required="option === item.options[0]"
+                :value="option.value"
+                :checked="form.findings[item.key] === option.value"
+                :required="index === 0"
                 :aria-invalid="validationErrors.includes(item.question)"
-                @change="setAnswer(item.key, option)"
+                @change="setAnswer(item.key, option.value)"
               >
-              <span class="rounded peer-focus-visible:ring-2 peer-focus-visible:ring-teal-700 peer-focus-visible:ring-offset-2">{{ option }}</span>
+              <span class="rounded-md peer-focus-visible:ring-2 peer-focus-visible:ring-teal-700 peer-focus-visible:ring-offset-2">{{ option.label }}</span>
+              <span v-if="form.findings[item.key] === option.value" class="ml-3 shrink-0 text-xs font-bold uppercase text-blue-800">Selected</span>
             </label>
           </div>
           <p v-if="validationErrors.includes(item.question)" :id="`${item.key}-error`" class="mt-2 text-sm text-red-700">Select an answer to continue.</p>
         </fieldset>
         <div>
           <label for="assessment-notes" class="label">Notes (optional)</label>
-          <textarea id="assessment-notes" v-model="form.notes" rows="3" class="field" placeholder="Optional notes about these lower-limb findings"></textarea>
+          <textarea id="assessment-notes" v-model="form.additionalNotes" rows="3" class="field" placeholder="Optional notes about these lower-limb activities"></textarea>
         </div>
-        <div class="rounded-xl bg-amber-50 p-4 text-sm leading-6 text-amber-900">StrokeGuard is a research prototype. It does not diagnose stroke or replace professional medical advice.</div>
+        <p class="rounded-xl bg-amber-50 p-4 text-sm leading-6 text-amber-900">{{ assessmentDisclaimer }}</p>
       </div>
+
+      <section v-if="allQuestionsAnswered" class="card" aria-live="polite">
+        <h2 class="text-xl font-bold">Review your answers</h2>
+        <dl class="mt-4 grid gap-3 sm:grid-cols-2">
+          <div v-for="item in questions" :key="item.key" class="rounded-xl border border-slate-200 p-4">
+            <dt class="text-sm text-slate-500">{{ item.label }}</dt>
+            <dd class="mt-1 font-semibold">{{ answerLabel(item.key, form.findings[item.key]) }}</dd>
+          </div>
+        </dl>
+      </section>
 
       <p v-if="saveError" role="alert" class="text-sm text-red-700">{{ saveError }}</p>
       <div class="flex flex-wrap justify-between gap-3">
         <RouterLink to="/dashboard" class="btn-secondary">Cancel</RouterLink>
-        <button class="btn-primary px-6" :disabled="saving" type="submit">{{ saving ? 'Saving…' : 'Save assessment and view results' }}</button>
+        <button class="btn-primary px-6" :disabled="saving" type="submit">{{ saving ? 'Saving...' : 'Save assessment and view results' }}</button>
       </div>
     </form>
   </section>
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { evaluateAssessment } from '@/services/rulesEngine'
+import { validateAssessmentInput } from '@/services/rulesEngine'
 import { useAppStore } from '@/stores/app'
 import { useAuthStore } from '@/stores/auth'
-import type { AssessmentFindings, AssessmentInput, FindingAnswer } from '@/types'
+import {
+  assessmentDisclaimer,
+  assessmentQuestions,
+  getAnswerLabel,
+  type AssessmentActivity,
+  type AssessmentAnswer,
+  type AssessmentInput,
+  isAssessmentAnswer
+} from '@/types'
 
 const router = useRouter()
 const store = useAppStore()
@@ -61,29 +80,7 @@ const auth = useAuthStore()
 const saving = ref(false)
 const saveError = ref('')
 const validationErrors = ref<string[]>([])
-const difficultyOptions = ['Mild difficulty', 'Moderate difficulty', 'Severe difficulty'] as const
-const questions = [
-  {
-    key: 'legMovement',
-    question: 'How hard is it to move your affected leg?',
-    options: ['Normal', ...difficultyOptions]
-  },
-  {
-    key: 'standing',
-    question: 'How hard is it to stand?',
-    options: ['No reported difficulty', ...difficultyOptions]
-  },
-  {
-    key: 'walking',
-    question: 'How hard is it to walk?',
-    options: ['No reported difficulty', ...difficultyOptions]
-  },
-  {
-    key: 'sittingToStanding',
-    question: 'How hard is it to get up from a chair?',
-    options: ['No reported difficulty', ...difficultyOptions]
-  }
-] as const
+const questions = assessmentQuestions
 
 const form = reactive<AssessmentInput>({
   findings: {
@@ -92,19 +89,48 @@ const form = reactive<AssessmentInput>({
     walking: null,
     sittingToStanding: null
   },
-  notes: ''
+  additionalNotes: ''
 })
 
-function setAnswer(key: keyof AssessmentFindings, answer: FindingAnswer) {
-  form.findings[key] = answer
+const allQuestionsAnswered = computed(() => questions.every(item => !!form.findings[item.key]))
+
+function answerLabel(activity: AssessmentActivity, answer: AssessmentAnswer | null) {
+  return getAnswerLabel(activity, answer)
+}
+
+function setAnswer(key: AssessmentActivity, answer: AssessmentAnswer) {
+  switch (key) {
+    case 'legMovement':
+      if (isAssessmentAnswer(key, answer)) form.findings.legMovement = answer
+      break
+    case 'standing':
+      if (isAssessmentAnswer(key, answer)) form.findings.standing = answer
+      break
+    case 'walking':
+      if (isAssessmentAnswer(key, answer)) form.findings.walking = answer
+      break
+    case 'sittingToStanding':
+      if (isAssessmentAnswer(key, answer)) form.findings.sittingToStanding = answer
+      break
+  }
   const question = questions.find(item => item.key === key)?.question
   if (question) validationErrors.value = validationErrors.value.filter(item => item !== question)
   if (!validationErrors.value.length) saveError.value = ''
 }
 
 function getSaveErrorMessage(error: unknown): string {
-  if (error instanceof Error) return error.message
-  if (typeof error === 'string' && error.trim()) return error
+  const messages = error instanceof Error
+    ? [error.message]
+    : typeof error === 'string'
+      ? [error]
+      : error && typeof error === 'object'
+        ? Object.values(error)
+          .filter((value): value is string => typeof value === 'string' && !!value.trim())
+        : []
+  if (messages.some(message => message.includes('All four lower-limb assessment answers are required.'))) {
+    return 'Supabase is still using the old assessment answer validation. In your Supabase SQL Editor, apply docs/migrations/20261030_activity_based_assessment.sql, then retry saving.'
+  }
+  if (messages.length) return [...new Set(messages)].join(' ')
   if (error && typeof error === 'object') {
     const details = error as { message?: unknown; details?: unknown; hint?: unknown }
     const parts = [details.message, details.details, details.hint]
@@ -116,9 +142,9 @@ function getSaveErrorMessage(error: unknown): string {
 }
 
 async function submit() {
-  const evaluation = evaluateAssessment(form)
-  validationErrors.value = evaluation.missingAnswers
-  if (evaluation.missingAnswers.length) {
+  const missingAnswers = validateAssessmentInput(form)
+  validationErrors.value = missingAnswers
+  if (missingAnswers.length) {
     saveError.value = 'Answer all four required questions before saving.'
     return
   }
@@ -134,7 +160,7 @@ async function submit() {
       patientId: auth.profile.id,
       date: new Date().toISOString(),
       input: JSON.parse(JSON.stringify(form)) as AssessmentInput,
-      recommendations: evaluation.recommendations
+      recommendations: []
     }
     await store.saveAssessment(assessment)
     await router.push(`/results/${assessment.id}`)

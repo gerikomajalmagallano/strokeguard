@@ -1,7 +1,7 @@
 import type { AssessmentResult, ExerciseSession } from '@/types'
-import type { UserProfile } from '@/types/auth'
-import { exercises } from '@/data/exercises'
 import { evaluateAssessment } from '@/services/rulesEngine'
+import { isAssessmentAnswer } from '@/types'
+import type { UserProfile } from '@/types/auth'
 import { supabase, supabaseConfigured } from '@/services/supabase'
 
 function requireOnlineSupabase() {
@@ -16,22 +16,14 @@ function requireOnlineSupabase() {
 
 function fromDatabaseRow(row: any): AssessmentResult {
   const functional = Array.isArray(row.functional_assessments) ? row.functional_assessments[0] : row.functional_assessments
-  const storedRecommendations = (row.recommendations ?? []).flatMap((item: any) => {
-    const exercise = exercises.find(candidate => candidate.id === item.exercise_id)
-    return exercise ? [{
-      exercise,
-      reasons: [item.reason],
-      matches: []
-    }] : []
-  })
   const input = {
     findings: {
-      legMovement: functional?.leg_movement ?? null,
-      standing: functional?.standing ?? null,
-      walking: functional?.walking ?? null,
-      sittingToStanding: functional?.sitting_to_standing ?? null
+      legMovement: isAssessmentAnswer('legMovement', functional?.leg_movement) ? functional.leg_movement : null,
+      standing: isAssessmentAnswer('standing', functional?.standing) ? functional.standing : null,
+      walking: isAssessmentAnswer('walking', functional?.walking) ? functional.walking : null,
+      sittingToStanding: isAssessmentAnswer('sittingToStanding', functional?.sitting_to_standing) ? functional.sitting_to_standing : null
     },
-    notes: functional?.notes || row.notes || ''
+    additionalNotes: functional?.additional_notes || functional?.notes || row.notes || ''
   }
   const evaluation = evaluateAssessment(input)
   return {
@@ -39,7 +31,7 @@ function fromDatabaseRow(row: any): AssessmentResult {
     patientId: row.patient_id,
     date: row.assessment_date,
     input,
-    recommendations: evaluation.missingAnswers.length ? storedRecommendations : evaluation.recommendations
+    recommendations: evaluation.recommendations
   }
 }
 
@@ -48,7 +40,7 @@ export const storage = {
     const client = requireOnlineSupabase()
     const { data, error } = await client
       .from('assessments')
-      .select('*, functional_assessments(*), recommendations(exercise_id, reason)')
+      .select('*, functional_assessments(*)')
       .eq('patient_id', patientId)
       .order('assessment_date', { ascending: false })
     if (error) throw error

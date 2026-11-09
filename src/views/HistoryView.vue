@@ -3,7 +3,17 @@
     <header><p class="text-sm font-semibold uppercase text-blue-700">History</p><h1 class="mt-1 text-3xl font-bold">Assessment history</h1><p class="mt-2 text-slate-600">Only your assessment records are shown.</p></header>
     <div v-if="store.assessments.length" class="space-y-3">
       <article v-for="item in store.assessments" :key="item.id" class="card flex flex-wrap items-center justify-between gap-4">
-        <div><p class="font-semibold">{{ formatDate(item.date) }}</p><p class="mt-1 text-sm text-slate-600">{{ evaluateAssessment(item.input).summary }}</p></div>
+        <div class="min-w-0 flex-1">
+          <p class="font-semibold">{{ formatDate(item.date) }}</p>
+          <dl class="mt-3 grid gap-2 sm:grid-cols-2">
+            <div v-for="question in assessmentQuestions" :key="question.key" class="text-sm">
+              <dt class="text-slate-500">{{ question.label }}</dt>
+              <dd class="font-medium text-slate-800">{{ getAnswerLabel(question.key, item.input.findings[question.key]) }}</dd>
+            </div>
+          </dl>
+          <p v-if="item.recommendations.length" class="mt-3 text-sm text-slate-600"><strong>Associated exercises:</strong> {{ item.recommendations.map(recommendation => recommendation.exercise.name).join(', ') }}</p>
+          <p v-else class="mt-3 text-sm text-slate-500">No exercises matched the current rules for this assessment.</p>
+        </div>
         <RouterLink :to="`/results/${item.id}`" class="btn-secondary">View Details</RouterLink>
       </article>
     </div>
@@ -16,7 +26,7 @@
 </template>
 <script setup lang="ts">
 import { useAppStore } from '@/stores/app'
-import { evaluateAssessment } from '@/services/rulesEngine'
+import { assessmentQuestions, getAnswerLabel } from '@/types'
 const store = useAppStore()
 function formatDate(value: string) { return new Date(value).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) }
 </script>

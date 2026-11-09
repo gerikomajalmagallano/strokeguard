@@ -1,3 +1,5 @@
+-- Historical migration superseded by 20261030_activity_based_assessment.sql.
+-- Do not apply to a database using the current activity-based assessment.
 begin;
 
 do $$

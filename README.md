@@ -1,13 +1,12 @@
 # StrokeGuard
 
-StrokeGuard is a Vue 3 + TypeScript research prototype for four-question lower-limb functional reporting and rules-based lower-limb exercise guidance. It does not diagnose stroke or replace professional medical advice.
+StrokeGuard is a Vue 3 + TypeScript research prototype for four-question lower-limb functional assessment and rule-based exercise recommendations. It does not diagnose stroke, calculate stroke severity, or replace professional rehabilitation advice.
 
 ## Patient flow
 
 Login → Dashboard → Four-Question Lower-Limb Assessment → Findings and Recommendations → Exercise Guide/Session → Assessment History
 
-The four answers remain separate; StrokeGuard does not combine them into a severity score. Normal/No reported difficulty answers do not trigger recommendations.
-Recommendations are grouped by the reported activity that matched the exercise; they are not assigned to days because the exercise library has no cited schedule or frequency guidance. Existing exercise instructions, safety text, durations, and repetitions are shown as catalogue content. Exercise references are not currently recorded in the library.
+The four answers remain separate: leg movement, standing, walking, and sit-to-stand. The rules use explicit answer IDs and exercise IDs; they do not calculate severity or search exercise text. Functional matching uses those explicit rules and relevant recorded abilities (for example, supported heel raises also require a compatible standing response). There is no separate eligibility-approval stage in the recommendation flow: matching exercises are displayed with available safety information and references, which do not constitute clinical clearance. Day 1–Day 4 labels organize matches by area for display only; this is not a schedule or planner.
 
 ## Run locally
 
@@ -23,26 +22,26 @@ npm run dev
 The Supabase JavaScript package is already installed. To enable Supabase Authentication and PostgreSQL:
 
 1. Create a Supabase project.
-2. For an existing StrokeGuard database, first apply [`docs/migrations/20261023_four_question_lower_limb_assessment.sql`](docs/migrations/20261023_four_question_lower_limb_assessment.sql) in the Supabase SQL Editor. It retains historical columns and records, makes the obsolete facial/classification columns optional, adds the four answer fields, and updates the authenticated save function. New four-question records require all answers. This project cannot apply the migration remotely; verify it succeeds in Supabase before using the updated app.
-   If saving still reports a `NOT NULL` error for `classification`, apply [`docs/migrations/20261023_fix_legacy_assessment_not_null.sql`](docs/migrations/20261023_fix_legacy_assessment_not_null.sql) in the same Supabase project. This repair only removes obsolete required-column constraints and preserves all existing values; it does not add a fabricated classification.
+2. For an existing StrokeGuard database, review the live schema and exercise IDs, take a backup, then apply [`docs/migrations/20261030_activity_based_assessment.sql`](docs/migrations/20261030_activity_based_assessment.sql), [`docs/migrations/20261030_expand_exercise_library.sql`](docs/migrations/20261030_expand_exercise_library.sql), and [`docs/migrations/20261031_expand_evidence_based_exercises.sql`](docs/migrations/20261031_expand_evidence_based_exercises.sql), in that order, in the Supabase SQL Editor. The exercise-library migrations add optional catalogue metadata and four records each, after checking their fixed IDs and names; they fail rather than overwrite conflicting records. They do not delete existing records. This change adds TypeScript-only catalogue entries and recommendation logic; no additional migration is required. No migration has been applied to any remote project from this workspace.
 3. For a new database, run [`docs/supabase-schema.sql`](docs/supabase-schema.sql). It creates the current tables, row-level security policies, save function, and lower-limb exercise catalogue.
 4. Enable Email in Authentication → Providers. For a thesis demonstration, either complete email verification during signup or disable email confirmation in the Supabase Auth settings.
 5. Copy `.env.example` to `.env.local`, then set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` from the Supabase project's API settings.
 6. Restart the Vite server. Never put a Supabase service-role key in this frontend project.
 
-Signup/login use Supabase Auth. Patient information, assessments, exercise sessions, and recommendation links are stored in PostgreSQL. RLS policies limit access to the authenticated patient's own records.
-For the complete online-only setup and verification steps, see [`docs/online-only.md`](docs/online-only.md).
+Signup/login use Supabase Auth. Patient information, assessments, and exercise sessions are stored in PostgreSQL. Rule-matched recommendations are recalculated from each saved assessment when results are loaded. RLS policies limit access to the authenticated patient's own records.
+The older migrations dated 20261023 are superseded for the current app. Do not apply them after this migration. For the complete online-only setup and verification steps, see [`docs/online-only.md`](docs/online-only.md).
 
 ## Build
 
 ```bash
 npm run build
+npm test
 ```
 
 ## Main implementation files
 
-- `src/services/rulesEngine.ts` — deterministic activity-to-exercise matching rules
-- `src/data/exercises.ts` — exercise catalogue and instructions
+- `src/services/rulesEngine.ts` — explicit answer-to-exercise matches and documented functional requirements
+- `src/data/exercises.ts` — 20-entry functional-area catalogue and its available safety/reference details
 - `src/services/storage.ts` — online, patient-scoped Supabase data access
 - `src/stores/auth.ts` — authentication and patient information
 - `src/views/AssessmentView.vue` — lower-limb assessment
@@ -50,4 +49,4 @@ npm run build
 - `src/views/RecommendationsView.vue` — reasons and lower-limb exercise
 - `src/views/HistoryView.vue` — patient assessment history
 
-The four questions are proposed self-reported findings, not a validated instrument. Recommendations match the existing exercise names, instructions, and stated benefits; they are not clinically validated treatment guidance.
+The four questions are self-reported information, not a validated instrument. The application does not establish diagnosis or clinical safety, and software tests do not establish clinical effectiveness or accuracy.
