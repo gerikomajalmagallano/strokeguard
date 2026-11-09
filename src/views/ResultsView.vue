@@ -14,6 +14,22 @@
       <ul v-if="evaluation.areaResults.length" class="mt-3 space-y-2 text-sm text-slate-700">
         <li v-for="area in evaluation.areaResults" :key="area.activity">
           <strong>{{ area.label }}:</strong> {{ area.reason }}
+          <p class="mt-1 text-slate-600"><strong>IF–THEN rule:</strong> {{ area.rule }}</p>
+          <p class="mt-1 text-slate-600"><strong>Matched exercises:</strong>
+            {{ area.matchedExercises.length
+              ? area.matchedExercises.map(exercise => `${exercise.name} (ID ${exercise.id}; ${exercise.documentationStatus})`).join('; ')
+              : 'None.' }}
+          </p>
+          <p v-if="area.missingEvidence" class="mt-1 text-amber-900"><strong>Evidence or catalogue gap:</strong> {{ area.missingEvidence }}</p>
+          <details v-if="area.excludedExercises.length" class="mt-1">
+            <summary class="cursor-pointer">Excluded exercises and reasons ({{ area.excludedExercises.length }})</summary>
+            <ul class="mt-1 list-inside list-disc">
+              <li v-for="exercise in area.excludedExercises" :key="exercise.id">
+                {{ exercise.name }} (ID {{ exercise.id }}): {{ exercise.reason }}
+                <span class="text-slate-500">Documentation: {{ exercise.documentationStatus }}</span>
+              </li>
+            </ul>
+          </details>
         </li>
       </ul>
     </article>
@@ -44,7 +60,7 @@
         </div>
       </div>
       <p v-else-if="evaluation.missingAnswers.length" class="mt-2 text-sm text-slate-600">No recommendations can be generated until all four answers are available.</p>
-      <p v-else class="mt-2 text-sm text-slate-600">No matching recommendations are available based on the recorded responses and current rules. Each functional area was evaluated independently.</p>
+      <p v-else class="mt-2 text-sm text-slate-600">No matching recommendations are available based on the recorded responses and current rules. Each functional area was evaluated against the complete four-response profile; review the rule audit for compatibility and documentation gaps.</p>
     </article>
 
     <p class="rounded-xl bg-amber-50 p-4 text-sm leading-6 text-amber-900">These questions collect self-reported functional information. They are not a clinically validated assessment instrument and do not establish a diagnosis or determine clinical safety. StrokeGuard does not diagnose stroke or replace professional rehabilitation advice.</p>

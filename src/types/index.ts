@@ -177,6 +177,20 @@ export interface AssessmentEvaluation {
     answer: AssessmentAnswer
     reason: string
     matchedCount: number
+    rule: string
+    compatibilityConditions: string[]
+    matchedExercises: Array<{
+      id: number
+      name: string
+      documentationStatus: string
+    }>
+    excludedExercises: Array<{
+      id: number
+      name: string
+      reason: string
+      documentationStatus: string
+    }>
+    missingEvidence: string | null
   }>
   summary: string
 }

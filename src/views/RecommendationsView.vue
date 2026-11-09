@@ -30,6 +30,27 @@
           <h3 class="font-semibold">{{ area.label }}</h3>
           <p class="mt-1 text-sm text-slate-600">Response: {{ getAnswerLabel(area.activity, area.answer) }}</p>
           <p class="mt-2 text-sm text-slate-700">{{ area.reason }}</p>
+          <p class="mt-2 text-sm text-slate-700"><strong>IF–THEN rule:</strong> {{ area.rule }}</p>
+          <ul class="mt-2 list-inside list-disc space-y-1 text-sm text-slate-600">
+            <li v-for="condition in area.compatibilityConditions" :key="condition">{{ condition }}</li>
+          </ul>
+          <p class="mt-2 text-sm text-slate-700">
+            <strong>Matched exercises:</strong>
+            {{ area.matchedExercises.length
+              ? area.matchedExercises.map(exercise => `${exercise.name} (ID ${exercise.id}; ${exercise.documentationStatus})`).join('; ')
+              : 'None.' }}
+          </p>
+          <p v-if="area.missingEvidence" class="mt-2 text-sm text-amber-900"><strong>Evidence or catalogue gap:</strong> {{ area.missingEvidence }}</p>
+          <details v-if="area.excludedExercises.length" class="mt-3">
+            <summary class="cursor-pointer text-sm font-semibold text-slate-700">Excluded exercises and reasons ({{ area.excludedExercises.length }})</summary>
+            <ul class="mt-2 space-y-2 text-sm text-slate-600">
+              <li v-for="exercise in area.excludedExercises" :key="exercise.id">
+                <strong>{{ exercise.name }} (ID {{ exercise.id }}):</strong>
+                {{ exercise.reason }}
+                <span class="block text-xs text-slate-500">Documentation status: {{ exercise.documentationStatus }}</span>
+              </li>
+            </ul>
+          </details>
         </section>
       </div>
     </article>
