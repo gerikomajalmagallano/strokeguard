@@ -165,14 +165,13 @@ begin
   ) on conflict (id) do nothing;
 
   insert into public.functional_assessments (
-    assessment_id, leg_movement, standing, walking, sitting_to_standing, notes, additional_notes
+    assessment_id, leg_movement, standing, walking, sitting_to_standing, additional_notes
   ) values (
     v_assessment_id,
     v_findings ->> 'legMovement',
     v_findings ->> 'standing',
     v_findings ->> 'walking',
     v_findings ->> 'sittingToStanding',
-    v_notes,
     v_notes
   ) on conflict (assessment_id) do nothing;
 
