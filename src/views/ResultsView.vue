@@ -17,7 +17,7 @@
           <p class="mt-1 text-slate-600"><strong>IF–THEN rule:</strong> {{ area.rule }}</p>
           <p class="mt-1 text-slate-600"><strong>Matched exercises:</strong>
             {{ area.matchedExercises.length
-              ? area.matchedExercises.map(exercise => `${exercise.name} (ID ${exercise.id}; ${exercise.documentationStatus})`).join('; ')
+              ? area.matchedExercises.map(exercise => `${exercise.name} (ID ${exercise.id})`).join('; ')
               : 'None.' }}
           </p>
           <p v-if="area.missingEvidence" class="mt-1 text-amber-900"><strong>Evidence or catalogue gap:</strong> {{ area.missingEvidence }}</p>
@@ -26,7 +26,6 @@
             <ul class="mt-1 list-inside list-disc">
               <li v-for="exercise in area.excludedExercises" :key="exercise.id">
                 {{ exercise.name }} (ID {{ exercise.id }}): {{ exercise.reason }}
-                <span class="text-slate-500">Documentation: {{ exercise.documentationStatus }}</span>
               </li>
             </ul>
           </details>
@@ -52,15 +51,11 @@
           <h3 class="font-semibold">{{ recommendation.exercise.name }}</h3>
           <p class="mt-1 text-sm text-slate-600">{{ recommendation.exercise.functionalGoal }}</p>
           <p v-for="reason in recommendation.reasons" :key="reason" class="mt-2 text-sm text-slate-600">{{ reason }}</p>
-          <p class="mt-3 text-sm text-amber-900">
-            <strong>Documentation status:</strong>
-            {{ getExerciseDocumentationGaps(recommendation.exercise).length ? `Incomplete. Missing: ${getExerciseDocumentationGaps(recommendation.exercise).join(', ')}.` : 'Complete.' }}
-          </p>
           <p class="mt-1 text-sm text-amber-900"><strong>Available safety information:</strong> {{ recommendation.exercise.safety ?? 'Not documented; a rule match is not safety clearance.' }}</p>
         </div>
       </div>
       <p v-else-if="evaluation.missingAnswers.length" class="mt-2 text-sm text-slate-600">No recommendations can be generated until all four answers are available.</p>
-      <p v-else class="mt-2 text-sm text-slate-600">No matching recommendations are available based on the recorded responses and current rules. Each functional area was evaluated against the complete four-response profile; review the rule audit for compatibility and documentation gaps.</p>
+      <p v-else class="mt-2 text-sm text-slate-600">No matching recommendations are available based on the recorded responses and current rules. Each functional area was evaluated against the complete four-response profile; review the rule audit for compatibility.</p>
     </article>
 
     <p class="rounded-xl bg-amber-50 p-4 text-sm leading-6 text-amber-900">These questions collect self-reported functional information. They are not a clinically validated assessment instrument and do not establish a diagnosis or determine clinical safety. StrokeGuard does not diagnose stroke or replace professional rehabilitation advice.</p>
@@ -80,7 +75,6 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { getExerciseDocumentationGaps } from '@/services/exerciseDocumentation'
 import { evaluateAssessment } from '@/services/rulesEngine'
 import { useAppStore } from '@/stores/app'
 import { getAnswerLabel } from '@/types'

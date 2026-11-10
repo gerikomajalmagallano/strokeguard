@@ -37,7 +37,7 @@
           <p class="mt-2 text-sm text-slate-700">
             <strong>Matched exercises:</strong>
             {{ area.matchedExercises.length
-              ? area.matchedExercises.map(exercise => `${exercise.name} (ID ${exercise.id}; ${exercise.documentationStatus})`).join('; ')
+              ? area.matchedExercises.map(exercise => `${exercise.name} (ID ${exercise.id})`).join('; ')
               : 'None.' }}
           </p>
           <p v-if="area.missingEvidence" class="mt-2 text-sm text-amber-900"><strong>Evidence or catalogue gap:</strong> {{ area.missingEvidence }}</p>
@@ -47,7 +47,6 @@
               <li v-for="exercise in area.excludedExercises" :key="exercise.id">
                 <strong>{{ exercise.name }} (ID {{ exercise.id }}):</strong>
                 {{ exercise.reason }}
-                <span class="block text-xs text-slate-500">Documentation status: {{ exercise.documentationStatus }}</span>
               </li>
             </ul>
           </details>
@@ -78,11 +77,7 @@
           <p v-else class="mt-2 text-sm text-slate-600">No exercise instructions are documented in the catalogue.</p>
         </div>
         <div class="mt-4 rounded-xl bg-amber-50 p-4">
-          <h3 class="text-sm font-semibold text-amber-950">Documentation status: {{ getExerciseDocumentationGaps(recommendation.exercise).length ? 'Incomplete' : 'Complete' }}</h3>
-          <p v-if="getExerciseDocumentationGaps(recommendation.exercise).length" class="mt-1 text-sm text-amber-900">
-            Not documented: {{ getExerciseDocumentationGaps(recommendation.exercise).join(', ') }}.
-          </p>
-          <p class="mt-1 text-sm text-amber-900">A rule match is separate from documentation completeness and does not establish personal suitability or safety.</p>
+          <p class="text-sm text-amber-900">A rule match does not establish personal suitability or safety.</p>
         </div>
         <dl class="mt-4 grid gap-2 text-sm text-slate-700 sm:grid-cols-2">
           <div><dt class="font-semibold">Difficulty</dt><dd>{{ recommendation.exercise.difficulty ?? 'Not documented.' }}</dd></div>
@@ -126,7 +121,6 @@
 import { computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { evaluateAssessment } from '@/services/rulesEngine'
-import { getExerciseDocumentationGaps } from '@/services/exerciseDocumentation'
 import { groupRecommendationsByDay } from '@/services/recommendationGroups'
 import { useAppStore } from '@/stores/app'
 import { getAnswerLabel } from '@/types'

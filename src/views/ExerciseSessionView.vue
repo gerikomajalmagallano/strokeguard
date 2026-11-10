@@ -9,7 +9,6 @@
       <p class="mt-2 text-sm text-slate-700"><strong>Difficulty:</strong> {{ exercise.difficulty ?? 'Not documented.' }} <span class="mx-1">·</span><strong>Duration:</strong> {{ exercise.duration ?? 'Not documented.' }} <span class="mx-1">·</span><strong>Repetitions:</strong> {{ exercise.repetitions ?? 'Not documented.' }}</p>
       <p class="mt-2 text-sm text-slate-700"><strong>Equipment or support:</strong> {{ exercise.equipmentOrSupport ?? 'Not documented in the current catalogue.' }}</p>
       <p class="mt-2 text-sm text-slate-700"><strong>Assistance:</strong> {{ exercise.assistanceRequirements ?? 'Not documented in the current catalogue.' }}</p>
-      <p class="mt-3 text-sm text-amber-900">Catalogue documentation status: {{ documentationGaps.length ? `Incomplete. Missing: ${documentationGaps.join(', ')}.` : 'Complete.' }} This is separate from rule matching and is not an individualized safety or suitability assessment.</p>
     </div>
     <div class="card"><h2 class="text-xl font-bold">Existing catalogue instructions</h2><ol v-if="exercise.instructions.length" class="mt-4 space-y-3"><li v-for="(instruction, index) in exercise.instructions" :key="instruction" class="flex gap-3"><span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-800">{{ index + 1 }}</span><span class="pt-1 text-sm leading-6 text-slate-700">{{ instruction }}</span></li></ol><p v-else class="mt-3 text-sm text-amber-800">No exercise protocol is documented. Professional review is required before this catalogue item can be used.</p></div>
     <div class="rounded-2xl border border-amber-200 bg-amber-50 p-5"><h2 class="font-bold text-amber-900">Available safety information</h2><p class="mt-2 text-sm leading-6 text-amber-900">{{ exercise.safety ?? 'Safety precautions are not documented; professional review is required.' }}</p><p class="mt-2 text-sm text-amber-900"><strong>Contraindications:</strong> {{ exercise.contraindications ?? 'Not documented in the current catalogue.' }}</p><p class="mt-2 text-sm text-amber-900"><strong>Stroke phase applicability:</strong> {{ exercise.strokePhaseApplicability ?? 'Not documented.' }}</p><p class="mt-2 text-sm text-amber-900"><strong>Literature reference:</strong> {{ exercise.literatureReference ?? 'No literature reference is recorded.' }}</p><a v-if="exercise.sourceUrl" class="mt-2 inline-block text-sm font-semibold text-blue-800 underline" :href="exercise.sourceUrl" target="_blank" rel="noreferrer">Open source</a></div>
@@ -28,7 +27,6 @@
 import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { exercises } from '@/data/exercises'
-import { getExerciseDocumentationGaps } from '@/services/exerciseDocumentation'
 import { useAppStore } from '@/stores/app'
 import { useAuthStore } from '@/stores/auth'
 
@@ -36,7 +34,6 @@ const route = useRoute()
 const store = useAppStore()
 const auth = useAuthStore()
 const exercise = exercises.find(item => item.id === Number(route.params.id))
-const documentationGaps = exercise ? getExerciseDocumentationGaps(exercise) : []
 const isSession = computed(() => route.path.endsWith('/session'))
 const saving = ref(false)
 const completed = ref(false)
