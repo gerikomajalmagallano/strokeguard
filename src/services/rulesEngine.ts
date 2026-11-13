@@ -1,4 +1,3 @@
-import { exercises } from '@/data/exercises'
 import { getExerciseDocumentationGaps } from '@/services/exerciseDocumentation'
 import {
   assessmentQuestions,
@@ -219,7 +218,7 @@ export function validateAssessmentInput(input: AssessmentInput | null | undefine
     .map(question => question.question)
 }
 
-export function evaluateAssessment(input: AssessmentInput | null | undefined, exerciseCatalog: Exercise[] = exercises): AssessmentEvaluation {
+export function evaluateAssessment(input: AssessmentInput | null | undefined, exerciseCatalog: Exercise[]): AssessmentEvaluation {
   const missingAnswers = validateAssessmentInput(input)
   if (missingAnswers.length || !input) {
     return {

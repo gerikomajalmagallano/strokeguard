@@ -14,17 +14,58 @@ after(async () => {
 
 const [
   { evaluateAssessment },
-  { exercises },
   { groupRecommendationsByDay },
   { getExerciseDocumentationGaps },
   { assessmentQuestions }
 ] = await Promise.all([
   vite.ssrLoadModule('/src/services/rulesEngine.ts'),
-  vite.ssrLoadModule('/src/data/exercises.ts'),
   vite.ssrLoadModule('/src/services/recommendationGroups.ts'),
   vite.ssrLoadModule('/src/services/exerciseDocumentation.ts'),
   vite.ssrLoadModule('/src/types/index.ts')
 ])
+
+const exerciseMigration = await readFile(
+  new URL('../docs/migrations/20261113_migrate_exercises_to_supabase.sql', import.meta.url),
+  'utf8'
+)
+const exercisePayload = exerciseMigration.match(/source_rows jsonb := \$exercise_data\$([\s\S]*?)\$exercise_data\$::jsonb/)
+assert.ok(exercisePayload, 'the exercise migration must contain its reviewed source catalogue')
+const exercises = JSON.parse(exercisePayload[1]).map(row => ({
+  id: row.id,
+  name: row.name,
+  description: row.description,
+  category: row.category,
+  functionalAreas: row.functional_areas,
+  targetArea: row.target_area,
+  startingPosition: row.starting_position,
+  difficulty: row.difficulty,
+  duration: row.duration,
+  repetitions: row.repetitions,
+  instructions: row.instructions,
+  functionalGoal: row.purpose,
+  safety: row.safety_notes,
+  equipmentOrSupport: row.equipment_or_support,
+  assistanceRequirements: row.assistance_requirements,
+  contraindications: row.contraindications,
+  eligibilityStatus: row.eligibility_status,
+  eligibilityRequirements: row.eligibility_requirements,
+  literatureReference: row.literature_reference,
+  sourceUrl: row.source_url,
+  strokePhaseApplicability: row.stroke_phase_applicability
+}))
+
+test('the Supabase migration catalogue contains 20 unique local exercise records', () => {
+  assert.equal(exercises.length, 20)
+  assert.equal(new Set(exercises.map(exercise => exercise.id)).size, 20)
+  assert.equal(exercises.find(exercise => exercise.name === 'Aerobic Exercise Training')?.id, 21)
+  assert.ok(exercises.every(exercise =>
+    exercise.name &&
+    exercise.category &&
+    exercise.targetArea &&
+    Array.isArray(exercise.instructions) &&
+    exercise.functionalGoal
+  ))
+})
 
 const answerValues = {
   legMovement: ['leg_independent', 'leg_assistance', 'leg_limited', 'leg_unable'],
@@ -43,7 +84,7 @@ const defaultFindings = {
 function evaluateWith(activity, answer, overrides = {}) {
   return evaluateAssessment({
     findings: { ...defaultFindings, [activity]: answer, ...overrides }
-  })
+  }, exercises)
 }
 
 test('assessment wording and answer values remain exact', () => {
@@ -119,7 +160,7 @@ test('all 256 complete response combinations are checked against the full profil
         for (const sittingToStanding of answerValues.sittingToStanding) {
           const evaluation = evaluateAssessment({
             findings: { legMovement, standing, walking, sittingToStanding }
-          })
+          }, exercises)
 
           assert.equal(evaluation.areaResults.length, 4)
           assert.equal(new Set(evaluation.recommendations.map(item => item.exercise.id)).size, evaluation.recommendations.length)
@@ -141,7 +182,7 @@ test('walking-aid results are retained with documented standing support', () => 
       walking: 'walking_aid',
       sittingToStanding: 'sit_to_stand_supported'
     }
-  })
+  }, exercises)
 
   assert.ok(evaluation.recommendations.some(recommendation => recommendation.exercise.id === 9))
 })
@@ -154,7 +195,7 @@ test('documented exercise requirements are checked against the complete response
       walking: 'walking_independent',
       sittingToStanding: 'sit_to_stand_independent'
     }
-  })
+  }, exercises)
 
   assert.ok(evaluation.areaResults.every(area => area.excludedExercises.some(exercise => exercise.reason.includes('Excluded')) || area.missingEvidence || area.matchedCount > 0))
 })
@@ -167,7 +208,7 @@ test('full assessment report names matches, rules, conditions, exclusions, and d
       walking: 'walking_independent',
       sittingToStanding: 'sit_to_stand_independent'
     }
-  })
+  }, exercises)
 
   assert.equal(evaluation.areaResults.length, 4)
   assert.ok(evaluation.areaResults.every(area => area.reason.length > 0))
@@ -185,7 +226,7 @@ test('missing answers are validated and do not produce recommendations or a part
       walking: null,
       sittingToStanding: 'sit_to_stand_independent'
     }
-  })
+  }, exercises)
 
   assert.deepEqual(evaluation.recommendations, [])
   assert.deepEqual(evaluation.missingAnswers, ['How do you currently move when walking?'])
@@ -200,7 +241,7 @@ test('day grouping shows each matched exercise once and omits empty days', () =>
       walking: 'walking_aid',
       sittingToStanding: 'sit_to_stand_supported'
     }
-  })
+  }, exercises)
   const groups = groupRecommendationsByDay(evaluation.recommendations)
 
   assert.ok(groups.length > 0)

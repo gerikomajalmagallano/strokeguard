@@ -1,5 +1,17 @@
 <template>
-  <section v-if="assessment" class="mx-auto max-w-4xl space-y-5">
+  <section v-if="!exerciseStore.loaded && !exerciseStore.error" class="card" role="status">
+    Loading the exercise catalogue before evaluating recommendations…
+  </section>
+  <section v-else-if="exerciseStore.error" class="card" role="alert">
+    <h1 class="text-xl font-bold">Recommendations unavailable</h1>
+    <p class="mt-2 text-sm text-slate-600">{{ exerciseStore.error }}</p>
+    <button class="btn-primary mt-4" @click="loadCatalogue">Retry</button>
+  </section>
+  <section v-else-if="!exerciseStore.catalogue.length" class="card">
+    <h1 class="text-xl font-bold">No exercises available</h1>
+    <p class="mt-2 text-sm text-slate-600">Recommendations cannot be evaluated because the Supabase exercise catalogue is empty.</p>
+  </section>
+  <section v-else-if="assessment" class="mx-auto max-w-4xl space-y-5">
     <header class="flex flex-wrap items-end justify-between gap-3">
       <div>
         <p class="text-sm font-semibold uppercase text-blue-700">Research-prototype decision support</p>
@@ -123,12 +135,24 @@ import { useRoute } from 'vue-router'
 import { evaluateAssessment } from '@/services/rulesEngine'
 import { groupRecommendationsByDay } from '@/services/recommendationGroups'
 import { useAppStore } from '@/stores/app'
+import { useExerciseStore } from '@/stores/exercises'
 import { getAnswerLabel } from '@/types'
 const route = useRoute()
 const store = useAppStore()
+const exerciseStore = useExerciseStore()
 const assessment = computed(() => store.assessments.find(item => item.id === route.params.id) ?? (!route.params.id ? store.latestAssessment : null))
-const evaluation = computed(() => evaluateAssessment(assessment.value?.input))
+const evaluation = computed(() => evaluateAssessment(assessment.value?.input, exerciseStore.catalogue))
 const recommendationGroups = computed(() => groupRecommendationsByDay(evaluation.value.recommendations))
 function formatDate(value: string) { return new Date(value).toLocaleString() }
-onMounted(() => { if (!assessment.value) void store.refresh() })
+async function loadCatalogue() {
+  try {
+    await exerciseStore.load()
+  } catch (error) {
+    console.error('Exercise catalogue loading failed.', error)
+  }
+}
+onMounted(() => {
+  void loadCatalogue()
+  if (!assessment.value) void store.refresh()
+})
 </script>

@@ -1,5 +1,6 @@
-import type { AssessmentResult, ExerciseSession } from '@/types'
+import type { AssessmentResult, Exercise, ExerciseSession } from '@/types'
 import { evaluateAssessment } from '@/services/rulesEngine'
+import { fetchExerciseCatalog } from '@/services/exerciseService'
 import { isAssessmentAnswer } from '@/types'
 import type { UserProfile } from '@/types/auth'
 import { supabase, supabaseConfigured } from '@/services/supabase'
@@ -14,7 +15,7 @@ function requireOnlineSupabase() {
   return supabase
 }
 
-function fromDatabaseRow(row: any): AssessmentResult {
+function fromDatabaseRow(row: any, exerciseCatalog: Exercise[]): AssessmentResult {
   const functional = Array.isArray(row.functional_assessments) ? row.functional_assessments[0] : row.functional_assessments
   const input = {
     findings: {
@@ -25,7 +26,7 @@ function fromDatabaseRow(row: any): AssessmentResult {
     },
     additionalNotes: functional?.additional_notes || functional?.notes || row.notes || ''
   }
-  const evaluation = evaluateAssessment(input)
+  const evaluation = evaluateAssessment(input, exerciseCatalog)
   return {
     id: row.id,
     patientId: row.patient_id,
@@ -38,13 +39,16 @@ function fromDatabaseRow(row: any): AssessmentResult {
 export const storage = {
   async getAssessments(patientId: string): Promise<AssessmentResult[]> {
     const client = requireOnlineSupabase()
-    const { data, error } = await client
-      .from('assessments')
-      .select('*, functional_assessments(*)')
-      .eq('patient_id', patientId)
-      .order('assessment_date', { ascending: false })
+    const [{ data, error }, exerciseCatalog] = await Promise.all([
+      client
+        .from('assessments')
+        .select('*, functional_assessments(*)')
+        .eq('patient_id', patientId)
+        .order('assessment_date', { ascending: false }),
+      fetchExerciseCatalog()
+    ])
     if (error) throw error
-    return (data ?? []).map(fromDatabaseRow)
+    return (data ?? []).map(row => fromDatabaseRow(row, exerciseCatalog))
   },
 
   async saveAssessment(assessment: AssessmentResult): Promise<void> {

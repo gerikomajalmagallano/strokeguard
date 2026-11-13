@@ -32,7 +32,7 @@
       <div v-if="store.assessments.length" class="mt-4 overflow-x-auto">
         <table class="w-full min-w-[440px] text-left text-sm">
           <thead class="border-b border-slate-200 text-slate-500"><tr><th class="py-3 pr-4 font-medium">Date</th><th class="py-3 pr-4 font-medium">Reported findings</th><th class="py-3 text-right font-medium">Details</th></tr></thead>
-          <tbody><tr v-for="item in store.assessments.slice(0, 5)" :key="item.id" class="border-b border-slate-100 last:border-0"><td class="py-3 pr-4">{{ formatDate(item.date) }}</td><td class="py-3 pr-4">{{ evaluateAssessment(item.input).summary }}</td><td class="py-3 text-right"><RouterLink :to="`/results/${item.id}`" class="font-semibold text-blue-800">View</RouterLink></td></tr></tbody>
+          <tbody><tr v-for="item in store.assessments.slice(0, 5)" :key="item.id" class="border-b border-slate-100 last:border-0"><td class="py-3 pr-4">{{ formatDate(item.date) }}</td><td class="py-3 pr-4">{{ assessmentSummary(item.input.findings) }}</td><td class="py-3 text-right"><RouterLink :to="`/results/${item.id}`" class="font-semibold text-blue-800">View</RouterLink></td></tr></tbody>
         </table>
       </div>
       <p v-else class="mt-4 rounded-xl bg-slate-50 p-4 text-sm text-slate-600">No assessments recorded. Start a new assessment to create your first result.</p>
@@ -43,13 +43,16 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { evaluateAssessment } from '@/services/rulesEngine'
 import { useAppStore } from '@/stores/app'
 import { useAuthStore } from '@/stores/auth'
-import { assessmentQuestions, getAnswerLabel } from '@/types'
+import { assessmentQuestions, getAnswerLabel, type AssessmentFindings } from '@/types'
 
 const store = useAppStore()
 const auth = useAuthStore()
 const latest = computed(() => store.latestAssessment)
 function formatDate(value: string) { return new Date(value).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) }
+function assessmentSummary(findings: AssessmentFindings) {
+  const reported = assessmentQuestions.map(question => `${question.label}: ${getAnswerLabel(question.key, findings[question.key])}`)
+  return `Recorded functional responses: ${reported.join('; ')}.`
+}
 </script>

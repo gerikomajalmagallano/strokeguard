@@ -1,5 +1,17 @@
 <template>
-  <section class="space-y-6">
+  <section v-if="!exerciseStore.loaded && !exerciseStore.error" class="card" role="status">
+    Loading the exercise catalogue from Supabase…
+  </section>
+  <section v-else-if="exerciseStore.error" class="card" role="alert">
+    <h1 class="text-xl font-bold">Exercise catalogue unavailable</h1>
+    <p class="mt-2 text-sm text-slate-600">{{ exerciseStore.error }}</p>
+    <button class="btn-primary mt-4" @click="loadCatalogue">Retry</button>
+  </section>
+  <section v-else-if="!exerciseStore.catalogue.length" class="card">
+    <h1 class="text-xl font-bold">No exercises available</h1>
+    <p class="mt-2 text-sm text-slate-600">The Supabase exercise catalogue is empty.</p>
+  </section>
+  <section v-else class="space-y-6">
     <div><p class="text-sm font-semibold uppercase tracking-wider text-blue-700">Exercise library</p><h1 class="mt-1 text-3xl font-bold">Exercise catalogue</h1><p class="mt-2 max-w-2xl text-slate-600">Items are grouped by functional area. The catalogue does not establish that an exercise is personally suitable or safe.</p></div>
     <section v-for="group in exerciseGroups" :key="group.area" class="space-y-3">
       <h2 class="text-xl font-bold">{{ group.area }}</h2>
@@ -22,17 +34,36 @@
   </section>
 </template>
 <script setup lang="ts">
-import { exercises } from '@/data/exercises'
-import type { FunctionalArea } from '@/types'
+import { computed, onMounted } from 'vue'
+import { useExerciseStore } from '@/stores/exercises'
+import type { Exercise, FunctionalArea } from '@/types'
 
+const exerciseStore = useExerciseStore()
 const functionalAreas: FunctionalArea[] = [
   'Leg movement',
   'Standing and balance',
   'Walking and gait',
   'Sit-to-stand and functional strengthening'
 ]
-const exerciseGroups = functionalAreas.map(area => ({
-  area,
-  exercises: exercises.filter(exercise => exercise.functionalAreas.includes(area))
-}))
+const exerciseGroups = computed(() => {
+  const groupedIds = new Set<number>()
+  const groups: Array<{ area: string; exercises: Exercise[] }> = functionalAreas.map(area => {
+    const areaExercises = exerciseStore.catalogue.filter(exercise => exercise.functionalAreas.includes(area))
+    for (const exercise of areaExercises) groupedIds.add(exercise.id)
+    return { area, exercises: areaExercises }
+  })
+  const ungrouped = exerciseStore.catalogue.filter(exercise => !groupedIds.has(exercise.id))
+  if (ungrouped.length) groups.push({ area: 'Other / not documented', exercises: ungrouped })
+  return groups
+})
+
+async function loadCatalogue() {
+  try {
+    await exerciseStore.load()
+  } catch (error) {
+    console.error('Exercise catalogue loading failed.', error)
+  }
+}
+
+onMounted(loadCatalogue)
 </script>

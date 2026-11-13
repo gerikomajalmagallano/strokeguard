@@ -132,7 +132,7 @@ export interface Exercise {
   description?: string | null
   category: ExerciseCategory
   functionalAreas: FunctionalArea[]
-  targetArea: 'Lower Limb'
+  targetArea: string
   startingPosition?: string | null
   difficulty: Difficulty | null
   duration: string | null

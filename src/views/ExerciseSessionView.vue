@@ -1,5 +1,13 @@
 <template>
-  <section v-if="exercise" class="mx-auto max-w-3xl space-y-5">
+  <section v-if="!exerciseStore.loaded && !exerciseStore.error" class="card" role="status">
+    Loading exercise details from Supabase…
+  </section>
+  <section v-else-if="exerciseStore.error" class="card" role="alert">
+    <h1 class="text-xl font-bold">Exercise unavailable</h1>
+    <p class="mt-2 text-sm text-slate-600">{{ exerciseStore.error }}</p>
+    <button class="btn-primary mt-4" @click="loadCatalogue">Retry</button>
+  </section>
+  <section v-else-if="exercise" class="mx-auto max-w-3xl space-y-5">
     <RouterLink :to="isSession ? `/exercise/${exercise.id}` : '/recommendations'" class="text-sm font-semibold text-blue-800">Back</RouterLink>
     <div class="card">
       <div class="mt-2"><span class="badge bg-blue-50 text-blue-800">{{ exercise.category }}</span><h1 class="mt-2 text-3xl font-bold">{{ exercise.name }}</h1><p class="mt-1 text-sm text-slate-600">{{ exercise.targetArea }}</p></div>
@@ -24,27 +32,37 @@
   <section v-else class="card text-center"><h1 class="text-2xl font-bold">Exercise not found</h1><RouterLink to="/exercises" class="btn-primary mt-5">Exercise library</RouterLink></section>
 </template>
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { exercises } from '@/data/exercises'
 import { useAppStore } from '@/stores/app'
 import { useAuthStore } from '@/stores/auth'
+import { useExerciseStore } from '@/stores/exercises'
 
 const route = useRoute()
 const store = useAppStore()
 const auth = useAuthStore()
-const exercise = exercises.find(item => item.id === Number(route.params.id))
+const exerciseStore = useExerciseStore()
+const exercise = computed(() => exerciseStore.catalogue.find(item => item.id === Number(route.params.id)))
 const isSession = computed(() => route.path.endsWith('/session'))
 const saving = ref(false)
 const completed = ref(false)
 const saveError = ref('')
 
+async function loadCatalogue() {
+  try {
+    await exerciseStore.load()
+  } catch (error) {
+    console.error('Exercise catalogue loading failed.', error)
+  }
+}
+
 async function completeExercise() {
-  if (!exercise || exercise.eligibilityStatus !== 'eligible' || !auth.profile?.id) return
+  const selectedExercise = exercise.value
+  if (!selectedExercise || selectedExercise.eligibilityStatus !== 'eligible' || !auth.profile?.id) return
   saving.value = true
   saveError.value = ''
   try {
-    await store.saveSession({ id: crypto.randomUUID(), patientId: auth.profile.id, assessmentId: store.latestAssessment?.id ?? 'standalone', exerciseId: exercise.id, exerciseName: exercise.name, completedAt: new Date().toISOString() })
+    await store.saveSession({ id: crypto.randomUUID(), patientId: auth.profile.id, assessmentId: store.latestAssessment?.id ?? 'standalone', exerciseId: selectedExercise.id, exerciseName: selectedExercise.name, completedAt: new Date().toISOString() })
     completed.value = true
   } catch (error) {
     saveError.value = error instanceof Error ? error.message : 'Session could not be saved.'
@@ -52,4 +70,6 @@ async function completeExercise() {
     saving.value = false
   }
 }
+
+onMounted(loadCatalogue)
 </script>
