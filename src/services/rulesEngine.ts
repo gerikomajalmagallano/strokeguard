@@ -73,18 +73,18 @@ const answerRules: AnswerRules = {
   },
   walking: {
     walking_independent: {
-      ifThen: 'IF the patient reports walking independently, THEN consider the documented walking exercises and task-specific gait practice.',
-      exerciseIds: [9, 19],
+      ifThen: 'IF the patient reports walking independently, THEN consider the documented walking exercises, dual-task walking, and task-specific gait practice.',
+      exerciseIds: [8, 9, 19],
       missingEvidence: null
     },
     walking_aid: {
-      ifThen: 'IF the patient reports walking with an aid, THEN consider walking practice that allows aid-supported gait and safe mobility training.',
-      exerciseIds: [9, 19],
+      ifThen: 'IF the patient reports walking with an aid, THEN consider aid-supported walking practice, including the documented dual-task and task-specific gait exercises.',
+      exerciseIds: [8, 9, 19],
       missingEvidence: null
     },
     walking_assistance: {
       ifThen: 'IF the patient reports needing another person when walking, THEN use supervised or helper-assisted walking options with documented safety support.',
-      exerciseIds: [8, 20],
+      exerciseIds: [20],
       missingEvidence: null
     },
     walking_unable: {
@@ -122,12 +122,15 @@ const compatibilityConditionsByActivity: Record<AssessmentActivity, string[]> = 
     'The complete four-response profile is retained; no standing, walking, or chair-rise response is used to infer leg movement ability.'
   ],
   standing: [
-    'The complete four-response profile is retained; the standing answer must allow the exercise starting position and documented support.'
+    'The complete four-response profile is retained; the standing answer must allow the exercise starting position and documented support.',
+    'Exercise 18 is excluded when both standing and walking are reported as unable, because its documented starting position is standing or walking.'
   ],
   walking: [
     'The complete four-response profile is checked.',
+    'Exercise 8 is mapped only to walking_independent and walking_aid and must also meet its standing eligibility requirement.',
     'The walking exercise starts in standing, so standing_unable excludes it.',
-    'Standing_support is compatible with the documented stable support. Standing_assistance excludes the exercise because hands-on help to reach its standing start position is not documented.'
+    'Standing_support is compatible with the documented stable support. Standing_assistance excludes the exercise because hands-on help to reach its standing start position is not documented.',
+    'Exercise 18 is excluded when both standing and walking are reported as unable, because its documented starting position is standing or walking.'
   ],
   sittingToStanding: [
     'The complete four-response profile is checked.',
@@ -189,7 +192,22 @@ function getExclusionReason(
     return 'Excluded: the exercise requires walking; no seated or preparatory protocol is documented for this response.'
   }
   if (activity === 'walking' && exercise.id === 10) {
-    return 'Excluded: the catalogue marks seated cycling as advanced and requiring professional clearance, but does not document suitability or a supporting reference for this response.'
+    const eligibilityConflict = getEligibilityConflict(exercise, findings)
+    const mappedByRule = ruleExerciseIds.includes(exercise.id)
+    if (!mappedByRule && eligibilityConflict) {
+      return `Not selected by the walking IF–THEN rule; eligibility also excludes this exercise: ${eligibilityConflict}`
+    }
+    if (eligibilityConflict) return `Excluded: ${eligibilityConflict}`
+    if (!mappedByRule) {
+      return 'Not selected: the walking IF–THEN rule does not map this exercise to the recorded walking response.'
+    }
+  }
+  if (
+    exercise.id === 18 &&
+    findings.standing === 'standing_unable' &&
+    findings.walking === 'walking_unable'
+  ) {
+    return 'Excluded: the documented starting position requires standing or walking, while both responses report inability.'
   }
   if (activity === 'legMovement' && exercise.id === 3 && answer === 'leg_independent') {
     return 'Excluded: the resistance exercise requires professional clearance, and the catalogue has no supporting reference to evaluate suitability.'
@@ -252,6 +270,11 @@ export function evaluateAssessment(input: AssessmentInput | null | undefined, ex
       if (question.key === 'walking' && exercise.id === 9 && input.findings.standing === 'standing_unable') return false
       if (question.key === 'walking' && exercise.id === 9 && input.findings.standing === 'standing_assistance') return false
       if (question.key === 'sittingToStanding' && exercise.id === 5 && input.findings.standing === 'standing_unable') return false
+      if (
+        exercise.id === 18 &&
+        input.findings.standing === 'standing_unable' &&
+        input.findings.walking === 'walking_unable'
+      ) return false
       return !getEligibilityConflict(exercise, input.findings)
     })
     const matchedIds = new Set(compatibleExercises.map(exercise => exercise.id))

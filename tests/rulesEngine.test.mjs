@@ -81,10 +81,75 @@ const defaultFindings = {
   sittingToStanding: 'sit_to_stand_independent'
 }
 
+const recommendationMatrix = JSON.parse(await readFile(
+  new URL('./fixtures/recommendation-matrix.json', import.meta.url),
+  'utf8'
+))
+
+const ruleExerciseIds = {
+  legMovement: {
+    leg_independent: [1, 2],
+    leg_assistance: [17],
+    leg_limited: [17],
+    leg_unable: [17]
+  },
+  standing: {
+    standing_independent: [4, 6, 11],
+    standing_support: [4, 6, 11],
+    standing_assistance: [11, 20],
+    standing_unable: [18, 20]
+  },
+  walking: {
+    walking_independent: [8, 9, 19],
+    walking_aid: [8, 9, 19],
+    walking_assistance: [20],
+    walking_unable: [10, 18, 20]
+  },
+  sittingToStanding: {
+    sit_to_stand_independent: [5, 20],
+    sit_to_stand_supported: [5, 20],
+    sit_to_stand_assistance: [20],
+    sit_to_stand_unable: [20]
+  }
+}
+
+const functionalAreaByActivity = {
+  legMovement: 'Leg movement',
+  standing: 'Standing and balance',
+  walking: 'Walking and gait',
+  sittingToStanding: 'Sit-to-stand and functional strengthening'
+}
+
+function expectedExerciseIds(findings) {
+  const expectedIds = new Set()
+
+  for (const [activity, ruleByAnswer] of Object.entries(ruleExerciseIds)) {
+    for (const id of ruleByAnswer[findings[activity]]) {
+      const exercise = exercises.find(item => item.id === id)
+      assert.ok(exercise, `rule references missing exercise ${id}`)
+      assert.ok(exercise.functionalAreas.includes(functionalAreaByActivity[activity]))
+
+      const eligibilityConflict = Object.entries(exercise.eligibilityRequirements ?? {})
+        .some(([question, allowedAnswers]) => !allowedAnswers.includes(findings[question]))
+      if (eligibilityConflict) continue
+
+      if (activity === 'walking' && id === 9 && ['standing_assistance', 'standing_unable'].includes(findings.standing)) continue
+      if (activity === 'sittingToStanding' && id === 5 && findings.standing === 'standing_unable') continue
+      if (id === 18 && findings.standing === 'standing_unable' && findings.walking === 'walking_unable') continue
+
+      expectedIds.add(id)
+    }
+  }
+
+  return [...expectedIds].sort((a, b) => a - b)
+}
+
+function evaluateFindings(findings) {
+  return evaluateAssessment({ findings }, exercises)
+}
+
 function evaluateWith(activity, answer, overrides = {}) {
-  return evaluateAssessment({
-    findings: { ...defaultFindings, [activity]: answer, ...overrides }
-  }, exercises)
+  return evaluateFindings({ ...defaultFindings, [activity]: answer, ...overrides })
 }
 
 test('assessment wording and answer values remain exact', () => {
@@ -129,7 +194,7 @@ test('the written coverage report includes all answer values and audit fields', 
     }
   }
 
-  for (const field of ['IF–THEN rule outcome', 'Compatibility conditions', 'Excluded exercises and reasons', 'Documentation status']) {
+  for (const field of ['IF–THEN rule outcome', 'Compatibility conditions and exclusions', 'Exhaustive profile verification']) {
     assert.ok(report.includes(field), `coverage report must include ${field}`)
   }
 
@@ -151,20 +216,44 @@ test('each of the 16 answer values has an explicit, explainable rule outcome', (
   }
 })
 
-test('all 256 complete response combinations are checked against the full profile', () => {
+test('all 256 profiles match expected exercise IDs from the rule and eligibility matrix', () => {
+  assert.equal(recommendationMatrix.length, 256)
   let testedProfiles = 0
 
   for (const legMovement of answerValues.legMovement) {
     for (const standing of answerValues.standing) {
       for (const walking of answerValues.walking) {
         for (const sittingToStanding of answerValues.sittingToStanding) {
-          const evaluation = evaluateAssessment({
-            findings: { legMovement, standing, walking, sittingToStanding }
-          }, exercises)
+          const findings = { legMovement, standing, walking, sittingToStanding }
+          const evaluation = evaluateFindings(findings)
+          const caseId = `RE-${String(testedProfiles + 1).padStart(3, '0')}`
+          const matrixCase = recommendationMatrix[testedProfiles]
 
+          assert.equal(matrixCase.caseId, caseId)
+          assert.deepEqual(matrixCase.findings, findings, `${caseId}: assessment answers must retain their matrix order`)
+          assert.deepEqual(
+            matrixCase.expectedExerciseIds,
+            expectedExerciseIds(findings),
+            `${caseId}: matrix expected IDs must agree with the independent rule/eligibility oracle`
+          )
           assert.equal(evaluation.areaResults.length, 4)
           assert.equal(new Set(evaluation.recommendations.map(item => item.exercise.id)).size, evaluation.recommendations.length)
           assert.ok(evaluation.summary.includes('Recorded functional responses'))
+          assert.deepEqual(
+            evaluation.recommendations.map(item => item.exercise.id).sort((a, b) => a - b),
+            matrixCase.expectedExerciseIds,
+            `${caseId}: generated IDs must match the finalized expected matrix`
+          )
+          assert.ok(Array.isArray(matrixCase.applicableExclusionReasons), `${caseId}: matrix exclusions must be recorded`)
+          for (const exclusion of matrixCase.applicableExclusionReasons) {
+            const area = evaluation.areaResults.find(result => result.activity === exclusion.activity)
+            const actualExclusion = area?.excludedExercises.find(item => item.id === exclusion.exerciseId)
+            assert.equal(
+              actualExclusion?.reason,
+              exclusion.reason,
+              `${caseId}: exclusion reason for exercise ${exclusion.exerciseId} must match`
+            )
+          }
           testedProfiles += 1
         }
       }
@@ -172,6 +261,94 @@ test('all 256 complete response combinations are checked against the full profil
   }
 
   assert.equal(testedProfiles, 256)
+})
+
+test('dual-task walking follows its existing walking and standing eligibility requirements', () => {
+  const compatible = evaluateFindings({
+    ...defaultFindings,
+    walking: 'walking_independent',
+    standing: 'standing_support'
+  })
+  const incompatibleWalking = evaluateFindings({
+    ...defaultFindings,
+    walking: 'walking_assistance',
+    standing: 'standing_support'
+  })
+  const incompatibleStanding = evaluateFindings({
+    ...defaultFindings,
+    walking: 'walking_aid',
+    standing: 'standing_assistance'
+  })
+
+  assert.ok(compatible.recommendations.some(item => item.exercise.id === 8))
+  assert.ok(incompatibleWalking.recommendations.some(item => item.exercise.id === 20))
+  assert.ok(!incompatibleWalking.recommendations.some(item => item.exercise.id === 8))
+  assert.ok(!incompatibleStanding.recommendations.some(item => item.exercise.id === 8))
+})
+
+test('seated leg cycling follows its leg eligibility and distinguishes rule non-selection', () => {
+  const eligible = evaluateFindings({
+    ...defaultFindings,
+    walking: 'walking_unable',
+    legMovement: 'leg_independent'
+  })
+  const eligibilityExcluded = evaluateFindings({
+    ...defaultFindings,
+    walking: 'walking_unable',
+    legMovement: 'leg_assistance'
+  })
+  const notSelectedByRule = evaluateFindings({
+    ...defaultFindings,
+    walking: 'walking_independent',
+    legMovement: 'leg_independent'
+  })
+  const notSelectedAndEligibilityExcluded = evaluateFindings({
+    ...defaultFindings,
+    walking: 'walking_independent',
+    legMovement: 'leg_assistance'
+  })
+
+  assert.ok(eligible.recommendations.some(item => item.exercise.id === 10))
+  assert.ok(!eligibilityExcluded.recommendations.some(item => item.exercise.id === 10))
+  assert.match(
+    eligibilityExcluded.areaResults.find(area => area.activity === 'walking').excludedExercises.find(item => item.id === 10).reason,
+    /Excluded: The exercise requires leg movement response leg_independent/
+  )
+  assert.match(
+    notSelectedByRule.areaResults.find(area => area.activity === 'walking').excludedExercises.find(item => item.id === 10).reason,
+    /^Not selected:/
+  )
+  assert.match(
+    notSelectedAndEligibilityExcluded.areaResults.find(area => area.activity === 'walking').excludedExercises.find(item => item.id === 10).reason,
+    /^Not selected by the walking IF–THEN rule; eligibility also excludes this exercise:/
+  )
+})
+
+test('aquatic exercise is excluded only when both documented starting modes are reported unable', () => {
+  const neitherStartMode = evaluateFindings({
+    ...defaultFindings,
+    standing: 'standing_unable',
+    walking: 'walking_unable'
+  })
+  const walkingStartMode = evaluateFindings({
+    ...defaultFindings,
+    standing: 'standing_unable',
+    walking: 'walking_independent'
+  })
+  const standingStartMode = evaluateFindings({
+    ...defaultFindings,
+    standing: 'standing_support',
+    walking: 'walking_unable'
+  })
+
+  assert.ok(!neitherStartMode.recommendations.some(item => item.exercise.id === 18))
+  assert.ok(walkingStartMode.recommendations.some(item => item.exercise.id === 18))
+  assert.ok(standingStartMode.recommendations.some(item => item.exercise.id === 18))
+  assert.ok(
+    neitherStartMode.areaResults
+      .flatMap(area => area.excludedExercises)
+      .some(item => item.id === 18 && item.reason.includes('both responses report inability'))
+  )
 })
 
 test('walking-aid results are retained with documented standing support', () => {
