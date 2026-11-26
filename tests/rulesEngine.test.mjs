@@ -100,8 +100,8 @@ const ruleExerciseIds = {
     standing_unable: [18, 20]
   },
   walking: {
-    walking_independent: [8, 9, 19],
-    walking_aid: [8, 9, 19],
+    walking_independent: [8, 9, 12, 19],
+    walking_aid: [8, 9, 12, 19],
     walking_assistance: [20],
     walking_unable: [10, 18, 20]
   },
@@ -112,6 +112,46 @@ const ruleExerciseIds = {
     sit_to_stand_unable: [20]
   }
 }
+
+const ruleIds = {
+  legMovement: {
+    leg_independent: 'LEG-01',
+    leg_assistance: 'LEG-02',
+    leg_limited: 'LEG-03',
+    leg_unable: 'LEG-04'
+  },
+  standing: {
+    standing_independent: 'STAND-01',
+    standing_support: 'STAND-02',
+    standing_assistance: 'STAND-03',
+    standing_unable: 'STAND-04'
+  },
+  walking: {
+    walking_independent: 'WALK-01',
+    walking_aid: 'WALK-02',
+    walking_assistance: 'WALK-03',
+    walking_unable: 'WALK-04'
+  },
+  sittingToStanding: {
+    sit_to_stand_independent: 'STS-01',
+    sit_to_stand_supported: 'STS-02',
+    sit_to_stand_assistance: 'STS-03',
+    sit_to_stand_unable: 'STS-04'
+  }
+}
+
+const mappedExerciseIds = new Set(Object.values(ruleExerciseIds)
+  .flatMap(ruleByAnswer => Object.values(ruleByAnswer).flat()))
+const unmappedExerciseIds = new Set([3, 13, 14, 15, 16, 21])
+
+test('every catalogue record is rule-mapped or explicitly documented as unmapped', () => {
+  assert.deepEqual(
+    [...new Set([...mappedExerciseIds, ...unmappedExerciseIds])].sort((a, b) => a - b),
+    exercises.map(exercise => exercise.id).sort((a, b) => a - b),
+    'every catalogue record must be rule-mapped or explicitly documented as unmapped'
+  )
+  assert.ok([...mappedExerciseIds].every(id => !unmappedExerciseIds.has(id)))
+})
 
 const functionalAreaByActivity = {
   legMovement: 'Leg movement',
@@ -198,6 +238,11 @@ test('the written coverage report includes all answer values and audit fields', 
     assert.ok(report.includes(field), `coverage report must include ${field}`)
   }
 
+  assert.ok(report.includes('Catalogue mapping audit'))
+  for (const exercise of exercises) {
+    assert.ok(report.includes(exercise.name), `coverage report must audit ${exercise.name}`)
+  }
+
   assert.match(report, /256/)
 })
 
@@ -219,6 +264,7 @@ test('each of the 16 answer values has an explicit, explainable rule outcome', (
 test('all 256 profiles match expected exercise IDs from the rule and eligibility matrix', () => {
   assert.equal(recommendationMatrix.length, 256)
   let testedProfiles = 0
+  const reachableExerciseIds = new Set()
 
   for (const legMovement of answerValues.legMovement) {
     for (const standing of answerValues.standing) {
@@ -228,6 +274,7 @@ test('all 256 profiles match expected exercise IDs from the rule and eligibility
           const evaluation = evaluateFindings(findings)
           const caseId = `RE-${String(testedProfiles + 1).padStart(3, '0')}`
           const matrixCase = recommendationMatrix[testedProfiles]
+          const recommendationIds = evaluation.recommendations.map(item => item.exercise.id)
 
           assert.equal(matrixCase.caseId, caseId)
           assert.deepEqual(matrixCase.findings, findings, `${caseId}: assessment answers must retain their matrix order`)
@@ -240,10 +287,17 @@ test('all 256 profiles match expected exercise IDs from the rule and eligibility
           assert.equal(new Set(evaluation.recommendations.map(item => item.exercise.id)).size, evaluation.recommendations.length)
           assert.ok(evaluation.summary.includes('Recorded functional responses'))
           assert.deepEqual(
-            evaluation.recommendations.map(item => item.exercise.id).sort((a, b) => a - b),
+            recommendationIds.sort((a, b) => a - b),
             matrixCase.expectedExerciseIds,
             `${caseId}: generated IDs must match the finalized expected matrix`
           )
+          assert.ok(recommendationIds.every(id => exercises.some(exercise => exercise.id === id)), `${caseId}: recommendations must reference catalogue IDs`)
+          assert.ok(recommendationIds.every(id => mappedExerciseIds.has(id)), `${caseId}: recommendations must reference rule-mapped IDs`)
+          assert.ok([...unmappedExerciseIds].every(id => !recommendationIds.includes(id)), `${caseId}: unmapped exercises must not be recommended`)
+          for (const [activity, answer] of Object.entries(findings)) {
+            const area = evaluation.areaResults.find(result => result.activity === activity)
+            assert.equal(area?.ruleId, ruleIds[activity][answer], `${caseId}: each response must select its stable rule ID`)
+          }
           assert.ok(Array.isArray(matrixCase.applicableExclusionReasons), `${caseId}: matrix exclusions must be recorded`)
           for (const exclusion of matrixCase.applicableExclusionReasons) {
             const area = evaluation.areaResults.find(result => result.activity === exclusion.activity)
@@ -255,12 +309,29 @@ test('all 256 profiles match expected exercise IDs from the rule and eligibility
             )
           }
           testedProfiles += 1
+          for (const id of recommendationIds) reachableExerciseIds.add(id)
         }
       }
     }
   }
 
   assert.equal(testedProfiles, 256)
+  assert.deepEqual([...reachableExerciseIds].sort((a, b) => a - b), [...mappedExerciseIds].sort((a, b) => a - b))
+})
+
+test('side-stepping is reachable only when both recorded catalogue prerequisites are met', () => {
+  const eligibleWalkingAnswers = new Set(['walking_independent', 'walking_aid'])
+  const eligibleStandingAnswers = new Set(['standing_independent', 'standing_support'])
+
+  for (const walking of answerValues.walking) {
+    for (const standing of answerValues.standing) {
+      const evaluation = evaluateFindings({ ...defaultFindings, walking, standing })
+      const isEligible = eligibleWalkingAnswers.has(walking) && eligibleStandingAnswers.has(standing)
+      const isRecommended = evaluation.recommendations.some(item => item.exercise.id === 12)
+
+      assert.equal(isRecommended, isEligible, `${walking} with ${standing}`)
+    }
+  }
 })
 
 test('dual-task walking follows its existing walking and standing eligibility requirements', () => {

@@ -19,6 +19,7 @@ const functionalAreaByActivity: Record<AssessmentActivity, FunctionalArea> = {
 }
 
 interface AnswerRule {
+  ruleId: string
   ifThen: string
   exerciseIds: number[]
   missingEvidence: string | null
@@ -29,21 +30,25 @@ type AnswerRules = Record<AssessmentActivity, Record<string, AnswerRule>>
 const answerRules: AnswerRules = {
   legMovement: {
     leg_independent: {
+      ruleId: 'LEG-01',
       ifThen: 'IF the patient reports independent leg movement, THEN consider the documented active seated ankle-movement exercises.',
       exerciseIds: [1, 2],
       missingEvidence: null
     },
     leg_assistance: {
+      ruleId: 'LEG-02',
       ifThen: 'IF the patient reports needing assistance to move the leg, THEN consider documented assisted or supervised movement options with a helper or therapist guidance.',
       exerciseIds: [17],
       missingEvidence: null
     },
     leg_limited: {
+      ruleId: 'LEG-03',
       ifThen: 'IF the patient reports only limited leg movement, THEN consider lower-limb practice that supports a reduced or assisted range of motion.',
       exerciseIds: [17],
       missingEvidence: null
     },
     leg_unable: {
+      ruleId: 'LEG-04',
       ifThen: 'IF the patient reports no leg movement, THEN consider a documented assisted or passive movement alternative and therapist-guided preparation.',
       exerciseIds: [17],
       missingEvidence: null
@@ -51,21 +56,25 @@ const answerRules: AnswerRules = {
   },
   standing: {
     standing_independent: {
+      ruleId: 'STAND-01',
       ifThen: 'IF the patient reports standing independently, THEN consider the documented supported standing exercises.',
       exerciseIds: [4, 6, 11],
       missingEvidence: null
     },
     standing_support: {
+      ruleId: 'STAND-02',
       ifThen: 'IF the patient reports standing while holding stable support, THEN consider exercises whose starting position and instructions require stable support.',
       exerciseIds: [4, 6, 11],
       missingEvidence: null
     },
     standing_assistance: {
+      ruleId: 'STAND-03',
       ifThen: 'IF the patient reports needing another person to stand, THEN consider a supported or supervised standing exercise with helper assistance.',
       exerciseIds: [11, 20],
       missingEvidence: null
     },
     standing_unable: {
+      ruleId: 'STAND-04',
       ifThen: 'IF the patient reports being unable to stand even with assistance, THEN use documented seated or supported alternatives rather than standing drills.',
       exerciseIds: [18, 20],
       missingEvidence: null
@@ -73,21 +82,25 @@ const answerRules: AnswerRules = {
   },
   walking: {
     walking_independent: {
-      ifThen: 'IF the patient reports walking independently, THEN consider the documented walking exercises, dual-task walking, and task-specific gait practice.',
-      exerciseIds: [8, 9, 19],
+      ruleId: 'WALK-01',
+      ifThen: 'IF the patient reports walking independently, THEN consider documented walking exercises, side-stepping, dual-task walking, and task-specific gait practice when all recorded eligibility requirements are met.',
+      exerciseIds: [8, 9, 12, 19],
       missingEvidence: null
     },
     walking_aid: {
-      ifThen: 'IF the patient reports walking with an aid, THEN consider aid-supported walking practice, including the documented dual-task and task-specific gait exercises.',
-      exerciseIds: [8, 9, 19],
+      ruleId: 'WALK-02',
+      ifThen: 'IF the patient reports walking with an aid, THEN consider documented aid-supported walking exercises and side-stepping when all recorded eligibility requirements are met.',
+      exerciseIds: [8, 9, 12, 19],
       missingEvidence: null
     },
     walking_assistance: {
+      ruleId: 'WALK-03',
       ifThen: 'IF the patient reports needing another person when walking, THEN use supervised or helper-assisted walking options with documented safety support.',
       exerciseIds: [20],
       missingEvidence: null
     },
     walking_unable: {
+      ruleId: 'WALK-04',
       ifThen: 'IF the patient reports being unable to walk, THEN consider seated, supported, or preparatory alternatives that do not require walking.',
       exerciseIds: [10, 18, 20],
       missingEvidence: null
@@ -95,21 +108,25 @@ const answerRules: AnswerRules = {
   },
   sittingToStanding: {
     sit_to_stand_independent: {
+      ruleId: 'STS-01',
       ifThen: 'IF the patient reports getting up independently without hands, THEN consider the documented chair sit-to-stand exercise.',
       exerciseIds: [5, 20],
       missingEvidence: null
     },
     sit_to_stand_supported: {
+      ruleId: 'STS-02',
       ifThen: 'IF the patient reports getting up independently using hands or chair support, THEN consider the documented chair sit-to-stand exercise.',
       exerciseIds: [5, 20],
       missingEvidence: null
     },
     sit_to_stand_assistance: {
+      ruleId: 'STS-03',
       ifThen: 'IF the patient reports needing another person to get up, THEN consider a supervised transfer or assisted sit-to-stand option.',
       exerciseIds: [20],
       missingEvidence: null
     },
     sit_to_stand_unable: {
+      ruleId: 'STS-04',
       ifThen: 'IF the patient reports being unable to rise from a chair, THEN prefer seated lower-limb alternatives or supervised mobility practice instead of standing transfer drills.',
       exerciseIds: [20],
       missingEvidence: null
@@ -127,7 +144,8 @@ const compatibilityConditionsByActivity: Record<AssessmentActivity, string[]> = 
   ],
   walking: [
     'The complete four-response profile is checked.',
-    'Exercise 8 is mapped only to walking_independent and walking_aid and must also meet its standing eligibility requirement.',
+    'Exercises 8 and 12 are mapped only to walking_independent and walking_aid and must also meet their recorded standing eligibility requirements.',
+    'Exercise 12 requires walking_independent or walking_aid and standing_independent or standing_support; the rule does not confirm a safe space, support equipment, supervision, or clinical clearance.',
     'The walking exercise starts in standing, so standing_unable excludes it.',
     'Standing_support is compatible with the documented stable support. Standing_assistance excludes the exercise because hands-on help to reach its standing start position is not documented.',
     'Exercise 18 is excluded when both standing and walking are reported as unable, because its documented starting position is standing or walking.'
@@ -304,6 +322,7 @@ export function evaluateAssessment(input: AssessmentInput | null | undefined, ex
       activity: question.key,
       label: question.label,
       answer,
+      ruleId: rule.ruleId,
       reason: matchedExercises.length
         ? `${matchedExercises.length} exercise${matchedExercises.length === 1 ? '' : 's'} match the predefined rule, subject to the compatibility conditions below.`
         : missingEvidence ?? 'No exercise is compatible with the complete reported response set.',

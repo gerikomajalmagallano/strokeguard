@@ -175,6 +175,7 @@ export interface AssessmentEvaluation {
     activity: AssessmentActivity
     label: string
     answer: AssessmentAnswer
+    ruleId: string
     reason: string
     matchedCount: number
     rule: string
