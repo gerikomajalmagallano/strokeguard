@@ -455,7 +455,7 @@ export const exercises: Exercise[] = [
     equipmentOrSupport: 'Therapy room, safe stations, and supervising staff.',
     assistanceRequirements: 'Professional supervision and setup are required for group or circuit-based practice.',
     eligibilityStatus: 'review_required',
-    eligibilityRequirements: { standing: ['standing_independent', 'standing_support', 'standing_assistance', 'standing_unable'], walking: ['walking_independent', 'walking_aid', 'walking_assistance', 'walking_unable'], sittingToStanding: ['sit_to_stand_independent', 'sit_to_stand_supported', 'sit_to_stand_assistance', 'sit_to_stand_unable'] },
+    eligibilityRequirements: { standing: ['standing_independent', 'standing_support'], walking: ['walking_independent', 'walking_aid'], sittingToStanding: ['sit_to_stand_independent', 'sit_to_stand_supported'] },
     contraindications: 'Avoid if the setting is not safe, if the person is medically unstable, or if supervision is inadequate.',
     literatureReference: 'Group-based and circuit-style rehabilitation are discussed in stroke therapy literature as structured mobility options; exact dosing is not standardized in the current source.',
     sourceUrl: 'https://www.nice.org.uk/guidance/ng236/chapter/Recommendations',

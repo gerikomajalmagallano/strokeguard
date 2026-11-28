@@ -69,14 +69,14 @@ const answerRules: AnswerRules = {
     },
     standing_assistance: {
       ruleId: 'STAND-03',
-      ifThen: 'IF the patient reports needing another person to stand, THEN consider a supported or supervised standing exercise with helper assistance.',
-      exerciseIds: [11, 20],
+      ifThen: 'IF the patient reports needing another person to stand, THEN consider documented supported standing options; do not infer hands-on assistance from supervision alone.',
+      exerciseIds: [11],
       missingEvidence: null
     },
     standing_unable: {
       ruleId: 'STAND-04',
       ifThen: 'IF the patient reports being unable to stand even with assistance, THEN use documented seated or supported alternatives rather than standing drills.',
-      exerciseIds: [18, 20],
+      exerciseIds: [18],
       missingEvidence: null
     }
   },
@@ -95,14 +95,14 @@ const answerRules: AnswerRules = {
     },
     walking_assistance: {
       ruleId: 'WALK-03',
-      ifThen: 'IF the patient reports needing another person when walking, THEN use supervised or helper-assisted walking options with documented safety support.',
-      exerciseIds: [20],
-      missingEvidence: null
+      ifThen: 'IF the patient reports needing another person when walking, THEN consider only walking options that document the required hands-on assistance.',
+      exerciseIds: [],
+      missingEvidence: 'No mapped catalogue exercise documents hands-on assistance during walking for this response.'
     },
     walking_unable: {
       ruleId: 'WALK-04',
       ifThen: 'IF the patient reports being unable to walk, THEN consider seated, supported, or preparatory alternatives that do not require walking.',
-      exerciseIds: [10, 18, 20],
+      exerciseIds: [10, 18],
       missingEvidence: null
     }
   },
@@ -121,15 +121,15 @@ const answerRules: AnswerRules = {
     },
     sit_to_stand_assistance: {
       ruleId: 'STS-03',
-      ifThen: 'IF the patient reports needing another person to get up, THEN consider a supervised transfer or assisted sit-to-stand option.',
-      exerciseIds: [20],
-      missingEvidence: null
+      ifThen: 'IF the patient reports needing another person to get up, THEN consider only transfers that document the required hands-on assistance.',
+      exerciseIds: [],
+      missingEvidence: 'No mapped catalogue exercise documents hands-on assistance for rising from a chair.'
     },
     sit_to_stand_unable: {
       ruleId: 'STS-04',
       ifThen: 'IF the patient reports being unable to rise from a chair, THEN prefer seated lower-limb alternatives or supervised mobility practice instead of standing transfer drills.',
-      exerciseIds: [20],
-      missingEvidence: null
+      exerciseIds: [],
+      missingEvidence: 'No mapped catalogue exercise documents a seated-only alternative for this sit-to-stand response.'
     }
   }
 }
@@ -140,11 +140,13 @@ const compatibilityConditionsByActivity: Record<AssessmentActivity, string[]> = 
   ],
   standing: [
     'The complete four-response profile is retained; the standing answer must allow the exercise starting position and documented support.',
+    'Exercise 20 requires independent or stable-support standing; supervision and station setup do not document hands-on assistance or a standing-unable alternative.',
     'Exercise 18 is excluded when both standing and walking are reported as unable, because its documented starting position is standing or walking.'
   ],
   walking: [
     'The complete four-response profile is checked.',
     'Exercises 8 and 12 are mapped only to walking_independent and walking_aid and must also meet their recorded standing eligibility requirements.',
+    'Exercise 20 requires walking_independent or walking_aid; no hands-on assistance or walking-unable alternative is documented.',
     'Exercise 12 requires walking_independent or walking_aid and standing_independent or standing_support; the rule does not confirm a safe space, support equipment, supervision, or clinical clearance.',
     'The walking exercise starts in standing, so standing_unable excludes it.',
     'Standing_support is compatible with the documented stable support. Standing_assistance excludes the exercise because hands-on help to reach its standing start position is not documented.',
@@ -152,6 +154,7 @@ const compatibilityConditionsByActivity: Record<AssessmentActivity, string[]> = 
   ],
   sittingToStanding: [
     'The complete four-response profile is checked.',
+    'Exercise 20 requires independent or hands-supported chair-rise ability; the catalogue does not document a hands-on transfer or unable-to-rise alternative.',
     'The chair-rise exercise is excluded when standing_unable conflicts with its standing end position.'
   ]
 }

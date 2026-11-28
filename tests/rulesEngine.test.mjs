@@ -16,12 +16,14 @@ const [
   { evaluateAssessment },
   { groupRecommendationsByDay },
   { getExerciseDocumentationGaps },
-  { assessmentQuestions }
+  { assessmentQuestions },
+  { exercises: localExercises }
 ] = await Promise.all([
   vite.ssrLoadModule('/src/services/rulesEngine.ts'),
   vite.ssrLoadModule('/src/services/recommendationGroups.ts'),
   vite.ssrLoadModule('/src/services/exerciseDocumentation.ts'),
-  vite.ssrLoadModule('/src/types/index.ts')
+  vite.ssrLoadModule('/src/types/index.ts'),
+  vite.ssrLoadModule('/src/data/exercises.ts')
 ])
 
 const exerciseMigration = await readFile(
@@ -30,6 +32,10 @@ const exerciseMigration = await readFile(
 )
 const exercisePayload = exerciseMigration.match(/source_rows jsonb := \$exercise_data\$([\s\S]*?)\$exercise_data\$::jsonb/)
 assert.ok(exercisePayload, 'the exercise migration must contain its reviewed source catalogue')
+const circuitEligibilityMigration = await readFile(
+  new URL('../docs/migrations/20261128_restrict_circuit_class_eligibility.sql', import.meta.url),
+  'utf8'
+)
 const exercises = JSON.parse(exercisePayload[1]).map(row => ({
   id: row.id,
   name: row.name,
@@ -67,6 +73,21 @@ test('the Supabase migration catalogue contains 20 unique local exercise records
   ))
 })
 
+test('Exercise 20 eligibility agrees in both catalogues and the existing-database migration', () => {
+  const expectedEligibility = {
+    standing: ['standing_independent', 'standing_support'],
+    walking: ['walking_independent', 'walking_aid'],
+    sittingToStanding: ['sit_to_stand_independent', 'sit_to_stand_supported']
+  }
+  const storedEligibility = JSON.stringify(expectedEligibility)
+
+  assert.deepEqual(exercises.find(exercise => exercise.id === 20).eligibilityRequirements, expectedEligibility)
+  assert.deepEqual(localExercises.find(exercise => exercise.id === 20).eligibilityRequirements, expectedEligibility)
+  assert.ok(circuitEligibilityMigration.includes(`set eligibility_requirements = '${storedEligibility}'::jsonb`))
+  assert.match(circuitEligibilityMigration, /where id = 20\s+and name = 'Circuit Class Therapy for Mobility After Stroke'/i)
+  assert.doesNotMatch(circuitEligibilityMigration, /\b(?:alter|create|drop)\s+table\b/i)
+})
+
 const answerValues = {
   legMovement: ['leg_independent', 'leg_assistance', 'leg_limited', 'leg_unable'],
   standing: ['standing_independent', 'standing_support', 'standing_assistance', 'standing_unable'],
@@ -96,20 +117,20 @@ const ruleExerciseIds = {
   standing: {
     standing_independent: [4, 6, 11],
     standing_support: [4, 6, 11],
-    standing_assistance: [11, 20],
-    standing_unable: [18, 20]
+    standing_assistance: [11],
+    standing_unable: [18]
   },
   walking: {
     walking_independent: [8, 9, 12, 19],
     walking_aid: [8, 9, 12, 19],
-    walking_assistance: [20],
-    walking_unable: [10, 18, 20]
+    walking_assistance: [],
+    walking_unable: [10, 18]
   },
   sittingToStanding: {
     sit_to_stand_independent: [5, 20],
     sit_to_stand_supported: [5, 20],
-    sit_to_stand_assistance: [20],
-    sit_to_stand_unable: [20]
+    sit_to_stand_assistance: [],
+    sit_to_stand_unable: []
   }
 }
 
@@ -294,6 +315,17 @@ test('all 256 profiles match expected exercise IDs from the rule and eligibility
           assert.ok(recommendationIds.every(id => exercises.some(exercise => exercise.id === id)), `${caseId}: recommendations must reference catalogue IDs`)
           assert.ok(recommendationIds.every(id => mappedExerciseIds.has(id)), `${caseId}: recommendations must reference rule-mapped IDs`)
           assert.ok([...unmappedExerciseIds].every(id => !recommendationIds.includes(id)), `${caseId}: unmapped exercises must not be recommended`)
+          for (const area of evaluation.areaResults) {
+            const matchedIds = area.matchedExercises.map(exercise => exercise.id)
+            const excludedIds = area.excludedExercises.map(exercise => exercise.id)
+            assert.ok(matchedIds.every(id => !excludedIds.includes(id)), `${caseId}: matched exercises cannot also be excluded`)
+            assert.ok(matchedIds.every(id =>
+              ruleExerciseIds[area.activity][area.answer].includes(id) &&
+              exercises.find(exercise => exercise.id === id).functionalAreas.includes(functionalAreaByActivity[area.activity]) &&
+              Object.entries(exercises.find(exercise => exercise.id === id).eligibilityRequirements ?? {})
+                .every(([question, allowedAnswers]) => allowedAnswers.includes(findings[question]))
+            ), `${caseId}: every matched exercise must satisfy its rule, functional area, and complete-profile eligibility`)
+          }
           for (const [activity, answer] of Object.entries(findings)) {
             const area = evaluation.areaResults.find(result => result.activity === activity)
             assert.equal(area?.ruleId, ruleIds[activity][answer], `${caseId}: each response must select its stable rule ID`)
@@ -352,9 +384,53 @@ test('dual-task walking follows its existing walking and standing eligibility re
   })
 
   assert.ok(compatible.recommendations.some(item => item.exercise.id === 8))
-  assert.ok(incompatibleWalking.recommendations.some(item => item.exercise.id === 20))
+  assert.ok(!incompatibleWalking.recommendations.some(item => item.exercise.id === 20))
   assert.ok(!incompatibleWalking.recommendations.some(item => item.exercise.id === 8))
   assert.ok(!incompatibleStanding.recommendations.some(item => item.exercise.id === 8))
+})
+
+test('RE-001 keeps Exercise 8 under independent walking and does not map it to walking assistance', () => {
+  const allIndependent = evaluateFindings(defaultFindings)
+  const walkingAssistance = evaluateWith('walking', 'walking_assistance')
+  const walkingRule = allIndependent.areaResults.find(area => area.activity === 'walking')
+
+  assert.ok(allIndependent.recommendations.some(item => item.exercise.id === 8))
+  assert.ok(walkingRule.matchedExercises.some(item => item.id === 8))
+  assert.ok(!walkingAssistance.recommendations.some(item => item.exercise.id === 8))
+  assert.ok(!ruleExerciseIds.walking.walking_assistance.includes(8))
+})
+
+test('Circuit Class Therapy requires documented standing, walking, and chair-rise ability', () => {
+  const circuit = exercises.find(exercise => exercise.id === 20)
+  assert.ok(circuit)
+  assert.deepEqual(circuit.eligibilityRequirements, {
+    standing: ['standing_independent', 'standing_support'],
+    walking: ['walking_independent', 'walking_aid'],
+    sittingToStanding: ['sit_to_stand_independent', 'sit_to_stand_supported']
+  })
+
+  const incompatibleProfiles = [
+    { activity: 'standing', answer: 'standing_assistance' },
+    { activity: 'standing', answer: 'standing_unable' },
+    { activity: 'walking', answer: 'walking_assistance' },
+    { activity: 'walking', answer: 'walking_unable' },
+    { activity: 'sittingToStanding', answer: 'sit_to_stand_assistance' },
+    { activity: 'sittingToStanding', answer: 'sit_to_stand_unable' }
+  ]
+
+  for (const { activity, answer } of incompatibleProfiles) {
+    const evaluation = evaluateWith(activity, answer)
+    const area = evaluation.areaResults.find(result => result.activity === activity)
+    const exclusion = area.excludedExercises.find(exercise => exercise.id === 20)
+
+    assert.ok(!evaluation.recommendations.some(item => item.exercise.id === 20), `${activity}: ${answer}`)
+    assert.match(exclusion.reason, /^Excluded: The exercise requires/)
+  }
+
+  assert.ok(evaluateFindings(defaultFindings).recommendations.some(item => item.exercise.id === 20))
+  assert.deepEqual(ruleExerciseIds.walking.walking_assistance, [])
+  assert.deepEqual(ruleExerciseIds.sittingToStanding.sit_to_stand_assistance, [])
+  assert.deepEqual(ruleExerciseIds.sittingToStanding.sit_to_stand_unable, [])
 })
 
 test('seated leg cycling follows its leg eligibility and distinguishes rule non-selection', () => {
@@ -393,6 +469,26 @@ test('seated leg cycling follows its leg eligibility and distinguishes rule non-
     notSelectedAndEligibilityExcluded.areaResults.find(area => area.activity === 'walking').excludedExercises.find(item => item.id === 10).reason,
     /^Not selected by the walking IF–THEN rule; eligibility also excludes this exercise:/
   )
+})
+
+test('Exercise 10 recommendations and walking exclusions agree for every walking response', () => {
+  for (const legMovement of answerValues.legMovement) {
+    for (const walking of answerValues.walking) {
+      const evaluation = evaluateFindings({ ...defaultFindings, legMovement, walking })
+      const isEligibleAndMapped = legMovement === 'leg_independent' && walking === 'walking_unable'
+      const isRecommended = evaluation.recommendations.some(item => item.exercise.id === 10)
+      const walkingArea = evaluation.areaResults.find(area => area.activity === 'walking')
+      const exclusion = walkingArea.excludedExercises.find(item => item.id === 10)
+
+      assert.equal(isRecommended, isEligibleAndMapped, `${legMovement} with ${walking}`)
+      assert.equal(walkingArea.matchedExercises.some(item => item.id === 10), isRecommended)
+      assert.equal(!!exclusion, !isRecommended)
+      if (exclusion) {
+        assert.match(exclusion.reason, /^(Not selected:|Not selected by the walking IF–THEN rule; eligibility also excludes|Excluded:)/)
+        assert.doesNotMatch(exclusion.reason, /matches a predefined rule/)
+      }
+    }
+  }
 })
 
 test('aquatic exercise is excluded only when both documented starting modes are reported unable', () => {
@@ -481,6 +577,13 @@ test('missing answers are validated and do not produce recommendations or a part
   assert.deepEqual(evaluation.areaResults, [])
 })
 
+test('no exercise is forced when the supplied catalogue has no compatible records', () => {
+  const evaluation = evaluateAssessment({ findings: defaultFindings }, [])
+
+  assert.deepEqual(evaluation.recommendations, [])
+  assert.ok(evaluation.areaResults.every(area => area.matchedCount === 0))
+})
+
 test('day grouping shows each matched exercise once and omits empty days', () => {
   const evaluation = evaluateAssessment({
     findings: {
@@ -497,9 +600,19 @@ test('day grouping shows each matched exercise once and omits empty days', () =>
   assert.ok(groups.every(group => group.items.length > 0))
 })
 
-test('exercise documentation gaps are reported independently of rule matches', () => {
-  const exercise = exercises.find(item => item.id === 11)
-  assert.ok(exercise)
-  assert.ok(Array.isArray(getExerciseDocumentationGaps(exercise)))
-  assert.equal(getExerciseDocumentationGaps(exercise).length, 0)
+test('all 20 exercise records are checked for documentation gaps independently of rule matches', () => {
+  const documentationResults = exercises.map(exercise => ({
+    id: exercise.id,
+    name: exercise.name,
+    gaps: getExerciseDocumentationGaps(exercise)
+  }))
+
+  assert.equal(documentationResults.length, 20)
+
+  for (const result of documentationResults) {
+    assert.ok(
+      Array.isArray(result.gaps),
+      `Exercise ${result.id} must return a documentation gap report`
+    )
+  }
 })

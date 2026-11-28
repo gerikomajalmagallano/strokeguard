@@ -74,8 +74,7 @@
       9,
       11,
       12,
-      19,
-      20
+      19
     ],
     "applicableExclusionReasons": [
       {
@@ -102,8 +101,7 @@
       9,
       11,
       12,
-      19,
-      20
+      19
     ],
     "applicableExclusionReasons": [
       {
@@ -188,8 +186,7 @@
       9,
       11,
       12,
-      19,
-      20
+      19
     ],
     "applicableExclusionReasons": [
       {
@@ -216,8 +213,7 @@
       9,
       11,
       12,
-      19,
-      20
+      19
     ],
     "applicableExclusionReasons": [
       {
@@ -241,8 +237,7 @@
       4,
       5,
       6,
-      11,
-      20
+      11
     ],
     "applicableExclusionReasons": [
       {
@@ -271,8 +266,7 @@
       4,
       5,
       6,
-      11,
-      20
+      11
     ],
     "applicableExclusionReasons": [
       {
@@ -300,8 +294,7 @@
       2,
       4,
       6,
-      11,
-      20
+      11
     ],
     "applicableExclusionReasons": [
       {
@@ -329,8 +322,7 @@
       2,
       4,
       6,
-      11,
-      20
+      11
     ],
     "applicableExclusionReasons": [
       {
@@ -361,8 +353,7 @@
       6,
       10,
       11,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": []
   },
@@ -382,8 +373,7 @@
       6,
       10,
       11,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": []
   },
@@ -402,8 +392,7 @@
       6,
       10,
       11,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": []
   },
@@ -422,8 +411,7 @@
       6,
       10,
       11,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": []
   },
@@ -502,8 +490,7 @@
       9,
       11,
       12,
-      19,
-      20
+      19
     ],
     "applicableExclusionReasons": [
       {
@@ -530,8 +517,7 @@
       9,
       11,
       12,
-      19,
-      20
+      19
     ],
     "applicableExclusionReasons": [
       {
@@ -616,8 +602,7 @@
       9,
       11,
       12,
-      19,
-      20
+      19
     ],
     "applicableExclusionReasons": [
       {
@@ -644,8 +629,7 @@
       9,
       11,
       12,
-      19,
-      20
+      19
     ],
     "applicableExclusionReasons": [
       {
@@ -669,8 +653,7 @@
       4,
       5,
       6,
-      11,
-      20
+      11
     ],
     "applicableExclusionReasons": [
       {
@@ -699,8 +682,7 @@
       4,
       5,
       6,
-      11,
-      20
+      11
     ],
     "applicableExclusionReasons": [
       {
@@ -728,8 +710,7 @@
       2,
       4,
       6,
-      11,
-      20
+      11
     ],
     "applicableExclusionReasons": [
       {
@@ -757,8 +738,7 @@
       2,
       4,
       6,
-      11,
-      20
+      11
     ],
     "applicableExclusionReasons": [
       {
@@ -789,8 +769,7 @@
       6,
       10,
       11,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": []
   },
@@ -810,8 +789,7 @@
       6,
       10,
       11,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": []
   },
@@ -830,8 +808,7 @@
       6,
       10,
       11,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": []
   },
@@ -850,8 +827,7 @@
       6,
       10,
       11,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": []
   },
@@ -867,8 +843,7 @@
       1,
       2,
       5,
-      11,
-      20
+      11
     ],
     "applicableExclusionReasons": [
       {
@@ -905,8 +880,7 @@
       1,
       2,
       5,
-      11,
-      20
+      11
     ],
     "applicableExclusionReasons": [
       {
@@ -942,8 +916,7 @@
     "expectedExerciseIds": [
       1,
       2,
-      11,
-      20
+      11
     ],
     "applicableExclusionReasons": [
       {
@@ -979,8 +952,7 @@
     "expectedExerciseIds": [
       1,
       2,
-      11,
-      20
+      11
     ],
     "applicableExclusionReasons": [
       {
@@ -1017,8 +989,7 @@
       1,
       2,
       5,
-      11,
-      20
+      11
     ],
     "applicableExclusionReasons": [
       {
@@ -1055,8 +1026,7 @@
       1,
       2,
       5,
-      11,
-      20
+      11
     ],
     "applicableExclusionReasons": [
       {
@@ -1092,8 +1062,7 @@
     "expectedExerciseIds": [
       1,
       2,
-      11,
-      20
+      11
     ],
     "applicableExclusionReasons": [
       {
@@ -1129,8 +1098,7 @@
     "expectedExerciseIds": [
       1,
       2,
-      11,
-      20
+      11
     ],
     "applicableExclusionReasons": [
       {
@@ -1167,8 +1135,7 @@
       1,
       2,
       5,
-      11,
-      20
+      11
     ],
     "applicableExclusionReasons": [
       {
@@ -1195,8 +1162,7 @@
       1,
       2,
       5,
-      11,
-      20
+      11
     ],
     "applicableExclusionReasons": [
       {
@@ -1222,8 +1188,7 @@
     "expectedExerciseIds": [
       1,
       2,
-      11,
-      20
+      11
     ],
     "applicableExclusionReasons": [
       {
@@ -1249,8 +1214,7 @@
     "expectedExerciseIds": [
       1,
       2,
-      11,
-      20
+      11
     ],
     "applicableExclusionReasons": [
       {
@@ -1279,8 +1243,7 @@
       5,
       10,
       11,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": []
   },
@@ -1298,8 +1261,7 @@
       5,
       10,
       11,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": []
   },
@@ -1316,8 +1278,7 @@
       2,
       10,
       11,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": []
   },
@@ -1334,8 +1295,7 @@
       2,
       10,
       11,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": []
   },
@@ -1350,8 +1310,7 @@
     "expectedExerciseIds": [
       1,
       2,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -1392,8 +1351,7 @@
     "expectedExerciseIds": [
       1,
       2,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -1434,8 +1392,7 @@
     "expectedExerciseIds": [
       1,
       2,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -1471,8 +1428,7 @@
     "expectedExerciseIds": [
       1,
       2,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -1508,8 +1464,7 @@
     "expectedExerciseIds": [
       1,
       2,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -1550,8 +1505,7 @@
     "expectedExerciseIds": [
       1,
       2,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -1592,8 +1546,7 @@
     "expectedExerciseIds": [
       1,
       2,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -1629,8 +1582,7 @@
     "expectedExerciseIds": [
       1,
       2,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -1666,8 +1618,7 @@
     "expectedExerciseIds": [
       1,
       2,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -1698,8 +1649,7 @@
     "expectedExerciseIds": [
       1,
       2,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -1730,8 +1680,7 @@
     "expectedExerciseIds": [
       1,
       2,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -1757,8 +1706,7 @@
     "expectedExerciseIds": [
       1,
       2,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -1784,8 +1732,7 @@
     "expectedExerciseIds": [
       1,
       2,
-      10,
-      20
+      10
     ],
     "applicableExclusionReasons": [
       {
@@ -1816,8 +1763,7 @@
     "expectedExerciseIds": [
       1,
       2,
-      10,
-      20
+      10
     ],
     "applicableExclusionReasons": [
       {
@@ -1848,8 +1794,7 @@
     "expectedExerciseIds": [
       1,
       2,
-      10,
-      20
+      10
     ],
     "applicableExclusionReasons": [
       {
@@ -1875,8 +1820,7 @@
     "expectedExerciseIds": [
       1,
       2,
-      10,
-      20
+      10
     ],
     "applicableExclusionReasons": [
       {
@@ -1963,8 +1907,7 @@
       11,
       12,
       17,
-      19,
-      20
+      19
     ],
     "applicableExclusionReasons": [
       {
@@ -1990,8 +1933,7 @@
       11,
       12,
       17,
-      19,
-      20
+      19
     ],
     "applicableExclusionReasons": [
       {
@@ -2073,8 +2015,7 @@
       11,
       12,
       17,
-      19,
-      20
+      19
     ],
     "applicableExclusionReasons": [
       {
@@ -2100,8 +2041,7 @@
       11,
       12,
       17,
-      19,
-      20
+      19
     ],
     "applicableExclusionReasons": [
       {
@@ -2124,8 +2064,7 @@
       5,
       6,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -2153,8 +2092,7 @@
       5,
       6,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -2181,8 +2119,7 @@
       4,
       6,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -2209,8 +2146,7 @@
       4,
       6,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -2239,8 +2175,7 @@
       6,
       11,
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -2264,8 +2199,7 @@
       6,
       11,
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -2288,8 +2222,7 @@
       6,
       11,
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -2312,8 +2245,7 @@
       6,
       11,
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -2395,8 +2327,7 @@
       11,
       12,
       17,
-      19,
-      20
+      19
     ],
     "applicableExclusionReasons": [
       {
@@ -2422,8 +2353,7 @@
       11,
       12,
       17,
-      19,
-      20
+      19
     ],
     "applicableExclusionReasons": [
       {
@@ -2505,8 +2435,7 @@
       11,
       12,
       17,
-      19,
-      20
+      19
     ],
     "applicableExclusionReasons": [
       {
@@ -2532,8 +2461,7 @@
       11,
       12,
       17,
-      19,
-      20
+      19
     ],
     "applicableExclusionReasons": [
       {
@@ -2556,8 +2484,7 @@
       5,
       6,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -2585,8 +2512,7 @@
       5,
       6,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -2613,8 +2539,7 @@
       4,
       6,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -2641,8 +2566,7 @@
       4,
       6,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -2671,8 +2595,7 @@
       6,
       11,
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -2696,8 +2619,7 @@
       6,
       11,
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -2720,8 +2642,7 @@
       6,
       11,
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -2744,8 +2665,7 @@
       6,
       11,
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -2766,8 +2686,7 @@
     "expectedExerciseIds": [
       5,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -2803,8 +2722,7 @@
     "expectedExerciseIds": [
       5,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -2839,8 +2757,7 @@
     },
     "expectedExerciseIds": [
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -2875,8 +2792,7 @@
     },
     "expectedExerciseIds": [
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -2912,8 +2828,7 @@
     "expectedExerciseIds": [
       5,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -2949,8 +2864,7 @@
     "expectedExerciseIds": [
       5,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -2985,8 +2899,7 @@
     },
     "expectedExerciseIds": [
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -3021,8 +2934,7 @@
     },
     "expectedExerciseIds": [
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -3058,8 +2970,7 @@
     "expectedExerciseIds": [
       5,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -3085,8 +2996,7 @@
     "expectedExerciseIds": [
       5,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -3111,8 +3021,7 @@
     },
     "expectedExerciseIds": [
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -3137,8 +3046,7 @@
     },
     "expectedExerciseIds": [
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -3165,8 +3073,7 @@
       5,
       11,
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -3188,8 +3095,7 @@
       5,
       11,
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -3210,8 +3116,7 @@
     "expectedExerciseIds": [
       11,
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -3232,8 +3137,7 @@
     "expectedExerciseIds": [
       11,
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -3253,8 +3157,7 @@
     },
     "expectedExerciseIds": [
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -3294,8 +3197,7 @@
     },
     "expectedExerciseIds": [
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -3335,8 +3237,7 @@
     },
     "expectedExerciseIds": [
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -3371,8 +3272,7 @@
     },
     "expectedExerciseIds": [
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -3407,8 +3307,7 @@
     },
     "expectedExerciseIds": [
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -3448,8 +3347,7 @@
     },
     "expectedExerciseIds": [
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -3489,8 +3387,7 @@
     },
     "expectedExerciseIds": [
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -3525,8 +3422,7 @@
     },
     "expectedExerciseIds": [
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -3561,8 +3457,7 @@
     },
     "expectedExerciseIds": [
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -3592,8 +3487,7 @@
     },
     "expectedExerciseIds": [
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -3623,8 +3517,7 @@
     },
     "expectedExerciseIds": [
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -3649,8 +3542,7 @@
     },
     "expectedExerciseIds": [
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -3674,8 +3566,7 @@
       "sittingToStanding": "sit_to_stand_independent"
     },
     "expectedExerciseIds": [
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -3709,8 +3600,7 @@
       "sittingToStanding": "sit_to_stand_supported"
     },
     "expectedExerciseIds": [
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -3744,8 +3634,7 @@
       "sittingToStanding": "sit_to_stand_assistance"
     },
     "expectedExerciseIds": [
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -3774,8 +3663,7 @@
       "sittingToStanding": "sit_to_stand_unable"
     },
     "expectedExerciseIds": [
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -3867,8 +3755,7 @@
       11,
       12,
       17,
-      19,
-      20
+      19
     ],
     "applicableExclusionReasons": [
       {
@@ -3894,8 +3781,7 @@
       11,
       12,
       17,
-      19,
-      20
+      19
     ],
     "applicableExclusionReasons": [
       {
@@ -3977,8 +3863,7 @@
       11,
       12,
       17,
-      19,
-      20
+      19
     ],
     "applicableExclusionReasons": [
       {
@@ -4004,8 +3889,7 @@
       11,
       12,
       17,
-      19,
-      20
+      19
     ],
     "applicableExclusionReasons": [
       {
@@ -4028,8 +3912,7 @@
       5,
       6,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -4057,8 +3940,7 @@
       5,
       6,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -4085,8 +3967,7 @@
       4,
       6,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -4113,8 +3994,7 @@
       4,
       6,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -4143,8 +4023,7 @@
       6,
       11,
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -4168,8 +4047,7 @@
       6,
       11,
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -4192,8 +4070,7 @@
       6,
       11,
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -4216,8 +4093,7 @@
       6,
       11,
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -4299,8 +4175,7 @@
       11,
       12,
       17,
-      19,
-      20
+      19
     ],
     "applicableExclusionReasons": [
       {
@@ -4326,8 +4201,7 @@
       11,
       12,
       17,
-      19,
-      20
+      19
     ],
     "applicableExclusionReasons": [
       {
@@ -4409,8 +4283,7 @@
       11,
       12,
       17,
-      19,
-      20
+      19
     ],
     "applicableExclusionReasons": [
       {
@@ -4436,8 +4309,7 @@
       11,
       12,
       17,
-      19,
-      20
+      19
     ],
     "applicableExclusionReasons": [
       {
@@ -4460,8 +4332,7 @@
       5,
       6,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -4489,8 +4360,7 @@
       5,
       6,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -4517,8 +4387,7 @@
       4,
       6,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -4545,8 +4414,7 @@
       4,
       6,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -4575,8 +4443,7 @@
       6,
       11,
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -4600,8 +4467,7 @@
       6,
       11,
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -4624,8 +4490,7 @@
       6,
       11,
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -4648,8 +4513,7 @@
       6,
       11,
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -4670,8 +4534,7 @@
     "expectedExerciseIds": [
       5,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -4707,8 +4570,7 @@
     "expectedExerciseIds": [
       5,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -4743,8 +4605,7 @@
     },
     "expectedExerciseIds": [
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -4779,8 +4640,7 @@
     },
     "expectedExerciseIds": [
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -4816,8 +4676,7 @@
     "expectedExerciseIds": [
       5,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -4853,8 +4712,7 @@
     "expectedExerciseIds": [
       5,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -4889,8 +4747,7 @@
     },
     "expectedExerciseIds": [
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -4925,8 +4782,7 @@
     },
     "expectedExerciseIds": [
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -4962,8 +4818,7 @@
     "expectedExerciseIds": [
       5,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -4989,8 +4844,7 @@
     "expectedExerciseIds": [
       5,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -5015,8 +4869,7 @@
     },
     "expectedExerciseIds": [
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -5041,8 +4894,7 @@
     },
     "expectedExerciseIds": [
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -5069,8 +4921,7 @@
       5,
       11,
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -5092,8 +4943,7 @@
       5,
       11,
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -5114,8 +4964,7 @@
     "expectedExerciseIds": [
       11,
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -5136,8 +4985,7 @@
     "expectedExerciseIds": [
       11,
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -5157,8 +5005,7 @@
     },
     "expectedExerciseIds": [
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -5198,8 +5045,7 @@
     },
     "expectedExerciseIds": [
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -5239,8 +5085,7 @@
     },
     "expectedExerciseIds": [
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -5275,8 +5120,7 @@
     },
     "expectedExerciseIds": [
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -5311,8 +5155,7 @@
     },
     "expectedExerciseIds": [
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -5352,8 +5195,7 @@
     },
     "expectedExerciseIds": [
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -5393,8 +5235,7 @@
     },
     "expectedExerciseIds": [
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -5429,8 +5270,7 @@
     },
     "expectedExerciseIds": [
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -5465,8 +5305,7 @@
     },
     "expectedExerciseIds": [
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -5496,8 +5335,7 @@
     },
     "expectedExerciseIds": [
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -5527,8 +5365,7 @@
     },
     "expectedExerciseIds": [
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -5553,8 +5390,7 @@
     },
     "expectedExerciseIds": [
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -5578,8 +5414,7 @@
       "sittingToStanding": "sit_to_stand_independent"
     },
     "expectedExerciseIds": [
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -5613,8 +5448,7 @@
       "sittingToStanding": "sit_to_stand_supported"
     },
     "expectedExerciseIds": [
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -5648,8 +5482,7 @@
       "sittingToStanding": "sit_to_stand_assistance"
     },
     "expectedExerciseIds": [
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -5678,8 +5511,7 @@
       "sittingToStanding": "sit_to_stand_unable"
     },
     "expectedExerciseIds": [
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -5771,8 +5603,7 @@
       11,
       12,
       17,
-      19,
-      20
+      19
     ],
     "applicableExclusionReasons": [
       {
@@ -5798,8 +5629,7 @@
       11,
       12,
       17,
-      19,
-      20
+      19
     ],
     "applicableExclusionReasons": [
       {
@@ -5881,8 +5711,7 @@
       11,
       12,
       17,
-      19,
-      20
+      19
     ],
     "applicableExclusionReasons": [
       {
@@ -5908,8 +5737,7 @@
       11,
       12,
       17,
-      19,
-      20
+      19
     ],
     "applicableExclusionReasons": [
       {
@@ -5932,8 +5760,7 @@
       5,
       6,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -5961,8 +5788,7 @@
       5,
       6,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -5989,8 +5815,7 @@
       4,
       6,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -6017,8 +5842,7 @@
       4,
       6,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -6047,8 +5871,7 @@
       6,
       11,
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -6072,8 +5895,7 @@
       6,
       11,
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -6096,8 +5918,7 @@
       6,
       11,
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -6120,8 +5941,7 @@
       6,
       11,
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -6203,8 +6023,7 @@
       11,
       12,
       17,
-      19,
-      20
+      19
     ],
     "applicableExclusionReasons": [
       {
@@ -6230,8 +6049,7 @@
       11,
       12,
       17,
-      19,
-      20
+      19
     ],
     "applicableExclusionReasons": [
       {
@@ -6313,8 +6131,7 @@
       11,
       12,
       17,
-      19,
-      20
+      19
     ],
     "applicableExclusionReasons": [
       {
@@ -6340,8 +6157,7 @@
       11,
       12,
       17,
-      19,
-      20
+      19
     ],
     "applicableExclusionReasons": [
       {
@@ -6364,8 +6180,7 @@
       5,
       6,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -6393,8 +6208,7 @@
       5,
       6,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -6421,8 +6235,7 @@
       4,
       6,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -6449,8 +6262,7 @@
       4,
       6,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -6479,8 +6291,7 @@
       6,
       11,
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -6504,8 +6315,7 @@
       6,
       11,
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -6528,8 +6338,7 @@
       6,
       11,
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -6552,8 +6361,7 @@
       6,
       11,
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -6574,8 +6382,7 @@
     "expectedExerciseIds": [
       5,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -6611,8 +6418,7 @@
     "expectedExerciseIds": [
       5,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -6647,8 +6453,7 @@
     },
     "expectedExerciseIds": [
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -6683,8 +6488,7 @@
     },
     "expectedExerciseIds": [
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -6720,8 +6524,7 @@
     "expectedExerciseIds": [
       5,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -6757,8 +6560,7 @@
     "expectedExerciseIds": [
       5,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -6793,8 +6595,7 @@
     },
     "expectedExerciseIds": [
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -6829,8 +6630,7 @@
     },
     "expectedExerciseIds": [
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -6866,8 +6666,7 @@
     "expectedExerciseIds": [
       5,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -6893,8 +6692,7 @@
     "expectedExerciseIds": [
       5,
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -6919,8 +6717,7 @@
     },
     "expectedExerciseIds": [
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -6945,8 +6742,7 @@
     },
     "expectedExerciseIds": [
       11,
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -6973,8 +6769,7 @@
       5,
       11,
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -6996,8 +6791,7 @@
       5,
       11,
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -7018,8 +6812,7 @@
     "expectedExerciseIds": [
       11,
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -7040,8 +6833,7 @@
     "expectedExerciseIds": [
       11,
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -7061,8 +6853,7 @@
     },
     "expectedExerciseIds": [
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -7102,8 +6893,7 @@
     },
     "expectedExerciseIds": [
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -7143,8 +6933,7 @@
     },
     "expectedExerciseIds": [
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -7179,8 +6968,7 @@
     },
     "expectedExerciseIds": [
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -7215,8 +7003,7 @@
     },
     "expectedExerciseIds": [
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -7256,8 +7043,7 @@
     },
     "expectedExerciseIds": [
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -7297,8 +7083,7 @@
     },
     "expectedExerciseIds": [
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -7333,8 +7118,7 @@
     },
     "expectedExerciseIds": [
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -7369,8 +7153,7 @@
     },
     "expectedExerciseIds": [
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -7400,8 +7183,7 @@
     },
     "expectedExerciseIds": [
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -7431,8 +7213,7 @@
     },
     "expectedExerciseIds": [
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -7457,8 +7238,7 @@
     },
     "expectedExerciseIds": [
       17,
-      18,
-      20
+      18
     ],
     "applicableExclusionReasons": [
       {
@@ -7482,8 +7262,7 @@
       "sittingToStanding": "sit_to_stand_independent"
     },
     "expectedExerciseIds": [
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -7517,8 +7296,7 @@
       "sittingToStanding": "sit_to_stand_supported"
     },
     "expectedExerciseIds": [
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -7552,8 +7330,7 @@
       "sittingToStanding": "sit_to_stand_assistance"
     },
     "expectedExerciseIds": [
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
@@ -7582,8 +7359,7 @@
       "sittingToStanding": "sit_to_stand_unable"
     },
     "expectedExerciseIds": [
-      17,
-      20
+      17
     ],
     "applicableExclusionReasons": [
       {
